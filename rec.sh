@@ -100,7 +100,7 @@ for file in `find $datapath/*/*/$run/raw -iname "*.*.root"`; do
       #BSUB -o $chunk/batch.log
       #BSUB -q $queue
       #BSUB -J rec-$chunk
-      . alijkl $alirootversion
+      . ../alijkl $alirootversion
       cd $chunk
       printenv > environment.log
       aliroot -l -q -b ./rec.C" | bsub
