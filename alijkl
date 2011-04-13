@@ -1,0 +1,84 @@
+#!/bin/bash
+
+PREPATH=/d/alice04/jkl/software
+
+# use GSI alien
+ALICE_PREFIX=/usr/local/pub
+if [ $(($GSI_LUSTRE)) -eq 1 ]; then
+   ALICE_PREFIX=/lustre_alpha/alice/software
+fi
+PREFIX=$ALICE_PREFIX/$GSI_OS_FLAVOR$GSI_OS_VERSION/$(uname -m)/$GSI_COMPILER_CC/alice/alien/v2-18-etch
+export ALIEN_ROOT=$PREFIX
+export ALIEN_PATH=$PREFIX/api/bin:$PREFIX/globus/bin:$PREFIX/bin
+export ALIEN_LD_LIBRARY_PATH=$PREFIX/globus/lib:
+export ALIEN_LD_LIBRARY_PATH=$ALIEN_ROOT/api/lib:$ALIEN_LD_LIBRARY_PATH
+
+export X509_CERT_DIR=$ALIEN_ROOT/globus/share/certificates
+export XrdSecGSISRVNAMES="*.cern.ch"
+
+export ALICE_TARGET=linuxx8664gcc;
+
+if [ $# -eq 1 ]; then
+# by default only AliRoot variables are set
+	case $1 in
+
+	    (trunk)
+	    export ALICE=$PREPATH/aliroot;
+	    ALICE_LEVEL=trunk;
+	    export ALICE_ROOT=$ALICE/$ALICE_LEVEL/src;
+	    export ROOTSYS=$PREPATH/root/v5-27-06b;
+	    export GEANT3DIR=$PREPATH/geant3/v1-11/
+	    export GEANT3PATH=$PREPATH/geant3/v1-11/lib/tgt_$ALICE_TARGET;
+	    echo Setting up AliRoot $ALICE_LEVEL;
+	    ;;
+
+	    (trunk-git)
+	    export ALICE=$PREPATH/aliroot;
+	    ALICE_LEVEL=trunk-git;
+	    export ALICE_ROOT=$ALICE/$ALICE_LEVEL;
+	    export ROOTSYS=$PREPATH/root/trunk;
+	    export GEANT3PATH=$PREPATH/geant3/v1-11/lib/tgt_$ALICE_TARGET;
+	    echo Setting up AliRoot $ALICE_LEVEL;
+	    ;;
+
+	    (dev)
+	    export ALICE=$PREPATH/aliroot;
+	    ALICE_LEVEL=dev;
+	    export ALICE_ROOT=$ALICE/$ALICE_LEVEL/src;
+	    export ROOTSYS=$PREPATH/root/v5-27-06b;
+	    export GEANT3DIR=$PREPATH/geant3/v1-11/
+	    export GEANT3PATH=$PREPATH/geant3/v1-11/lib/tgt_$ALICE_TARGET;
+	    echo Setting up AliRoot $ALICE_LEVEL;
+	    ;;
+
+	    (default) 
+	    echo You have to specify an AliRoot version
+	    echo Nothing changed
+	    exit
+	esac
+fi;
+
+# remove remainings from other ROOT, AliRoot settings
+
+NEWPATH=;
+for dir in `echo $PATH | sed 's/:/ /g'`; do
+    if [[ "$dir" =~ [R,r]oot ]]; then
+	continue;
+    else
+	NEWPATH=$NEWPATH$dir:;
+    fi;
+done;
+export NEWPATH;
+
+NEWLD_PATH=;
+for dir in `echo $LD_LIBRARY_PATH | sed 's/:/ /g'`; do
+    if [[ "$dir" =~ [R,r]oot ]]; then
+	continue;
+    else
+	NEWLD_PATH=$NEWLD_PATH$dir:;
+    fi;
+done;
+export NEWLD_PATH;
+
+export PATH=$ROOTSYS/bin:$ALICE/$ALICE_LEVEL/build/bin/tgt_${ALICE_TARGET}:$ALIEN_PATH/api/bin/:$NEWPATH
+export LD_LIBRARY_PATH=$ALIEN_LD_LIBRARY_PATH:$ROOTSYS/lib:$ALICE/$ALICE_LEVEL/build/lib/tgt_${ALICE_TARGET}:${GEANT3PATH}:$NEWLD_PATH
