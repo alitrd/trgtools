@@ -22,29 +22,23 @@ do
         exit 0
         ;; 
     q)  queue=$OPTARG
-        shift
         ;;
     m)  maxjobs=$OPTARG
-        shift
         ;;
     n)  nevents=$OPTARG
-        shift
         ;;
     s)  startevent=$OPTARG
-        shift
         ;;
     d)  datapath=$OPTARG
-        shift
         ;;
     v)  alirootversion=$OPTARG
-        shift
         ;;
     ?)  show_help
         exit 1
         ;;
     esac
-    shift
 done
+shift $(($OPTIND - 1))
 
 runnr=$1
 
@@ -55,6 +49,7 @@ echo "#  Queue:          $queue"
 echo "#  MaxJobs:        $maxjobs"
 echo "#  Datapath:       $datapath"
 echo "#  AliRootVersion: $alirootversion"
+echo "#    nevents: $nevents     startevent: $startevent"
 echo "#-------------------------------------------------------------------"
 #--------------------------------------------------------------------------------
 run=`printf %09d $runnr`
