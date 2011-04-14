@@ -1,23 +1,40 @@
 #!/bin/bash
 
 function show_help() {
-  echo "Batch compile script"
+  echo "Reconstruction script"
+  echo "  Usage: `basename $0` [options] <input>"
+  echo "         <input> is interpreted as run number if it contains digits only,"
+  echo "         otherwise as file containing one chunk per line."
+  echo "  Options:"
+  echo "    -q <q>    Specify batch queue to submit to"
+  echo "    -l        Run on local machine (useful for testing)"
+  echo "    -o <o>    Specify output directory (default: $def_outdatapath)"
+  echo "    -d <p>    Specify input data base path (default: $def_indatapath)"
+  echo "    -b <p>    Specify OCDB base path (default: $def_indatapath)"
+  echo "    -m <i>    Limit maximum number of jobs (=chunks) to submit to <i>"
+  echo "    -n <i>    Process <i> events per chunk, starting from <s>"
+  echo "    -s <i>    Specify start event <s>"
+  echo "    -v <c>    Specify aliroot version to use (default: dev)"
+  echo "    -h        Show this help"
 }
 
 #--------------------------------------------------------------------------------
+def_indatapath="/lustre/alice/alien/alice/data"
+def_outdatapath="/lustre/alice/pachmay_2/trd_trigger"
 
-alirootversion="dev"
-indatapath="/lustre/alice/alien/alice/data"
-outdatapath="/lustre/alice/pachmay_2/trd_trigger"
+indatapath=$def_outdatapath
+outdatapath=$def_outdatapath
 scriptpath=`dirname $(readlink -f $0)`
 ocdbpath=$indatapath
+runlocal=0
+
+alirootversion="dev"
 detectors="ITS TPC TRD TOF"
 rec_options="tp,tw,dc"
 nevents=10001
 startevent=0
 maxjobs=10
 queue=alice-t3_2h
-runlocal=0
 
 while getopts "hq:m:n:s:d:v:lo:b:" OPTION
 do 
@@ -144,4 +161,3 @@ for file in $filelist; do
 done
 
 popd
-
