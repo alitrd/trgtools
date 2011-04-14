@@ -102,12 +102,12 @@ njobs=0;
 
 if [[ "$runnr" =~ '^[0-9]*$' ]]; then
   echo 0
-  filelist=`find $indatapath/*/*/$run/raw -iname "[0-9]*\.[0-9]*\.root"`
   run=`printf %09d $runnr`
+  filelist=`find $indatapath/*/*/$run/raw -iname "[0-9]*\.[0-9]*\.root"`
 else
   echo 1
-  filelist=`cat $runnr`
   run=`basename $runnr | sed -e 's/\..*//g'`
+  filelist=`cat $runnr`
 fi
 
 [[ -d $outdatapath/$run ]] || mkdir -p $outdatapath/$run
