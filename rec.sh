@@ -22,7 +22,7 @@ function show_help() {
 def_indatapath="/lustre/alice/alien/alice/data"
 def_outdatapath="/lustre/alice/pachmay_2/trd_trigger"
 
-indatapath=$def_outdatapath
+indatapath=$def_indatapath
 outdatapath=$def_outdatapath
 scriptpath=`dirname $(readlink -f $0)`
 ocdbpath=$indatapath
