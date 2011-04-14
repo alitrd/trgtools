@@ -1,21 +1,25 @@
 #!/bin/bash
 
 function show_help() {
-  echo "HELP!"
+  echo "Batch compile script"
 }
 
 #--------------------------------------------------------------------------------
 
 alirootversion="dev"
-datapath="/lustre/alice/alien/alice/data"
+indatapath="/lustre/alice/alien/alice/data"
+outdatapath="/lustre/alice/pachmay_2/trd_trigger"
+scriptpath=`dirname $(readlink -f $0)`
+ocdbpath=$indatapath
 detectors="ITS TPC TRD TOF"
 rec_options="tp,tw,dc"
 nevents=10001
 startevent=0
 maxjobs=10
 queue=alice-t3_2h
+runlocal=0
 
-while getopts "hq:m:n:s:d:v:" OPTION
+while getopts "hq:m:n:s:d:v:lo:b:" OPTION
 do 
   case $OPTION in
     h)  show_help
@@ -29,9 +33,15 @@ do
         ;;
     s)  startevent=$OPTARG
         ;;
-    d)  datapath=$OPTARG
+    d)  indatapath=$OPTARG
         ;;
     v)  alirootversion=$OPTARG
+        ;;
+    l)  runlocal=1
+        ;;
+    o)  outdatapath=$OPTARG
+        ;;
+    b)  ocdbpath=$OPTARG
         ;;
     ?)  show_help
         exit 1
@@ -43,16 +53,23 @@ shift $(($OPTIND - 1))
 runnr=$1
 
 #--------------------------------------------------------------------------------
+execmode="BATCH"
+if [ "$runlocal" -eq 1 ]; then
+  execmode="LOCAL"
+fi
+
 echo "#-------------------------------------------------------------------"
 echo "#  RunNumber:      $runnr"
 echo "#  Queue:          $queue"
 echo "#  MaxJobs:        $maxjobs"
-echo "#  Datapath:       $datapath"
+echo "#  DatapathIn:     $indatapath"
+echo "#  DatapathOut:    $outdatapath"
+echo "#  Execution       $execmode"
 echo "#  AliRootVersion: $alirootversion"
 echo "#    nevents: $nevents     startevent: $startevent"
 echo "#-------------------------------------------------------------------"
+
 #--------------------------------------------------------------------------------
-run=`printf %09d $runnr`
 
 echo "Runnumber: $runnr"
 echo "Max no. of jobs to be submitted: $maxjobs"
@@ -61,10 +78,20 @@ sleep 2;
 # count jobs already submitted
 njobs=0;
 
-[[ -d $run ]] || mkdir -p $run
-pushd $run
+if [[ "$runnr" =~ '^[0-9]*$' ]]; then
+  echo 0
+  filelist=`find $indatapath/*/*/$run/raw -iname "[0-9]*\.[0-9]*\.root"`
+  run=`printf %09d $runnr`
+else
+  echo 1
+  filelist=`cat $runnr`
+  run=`basename $runnr | sed -e 's/\..*//g'`
+fi
 
-for file in `find $datapath/*/*/$run/raw -iname "*.*.root"`; do
+[[ -d $outdatapath/$run ]] || mkdir -p $outdatapath/$run
+pushd $outdatapath/$run
+
+for file in $filelist; do 
 
     chunk=`basename $file .root`;
     year=20${chunk:0:2}
@@ -72,14 +99,14 @@ for file in `find $datapath/*/*/$run/raw -iname "*.*.root"`; do
     echo $year $chunk;
     [[ -d $chunk ]] || mkdir $chunk
 
-    ocdb="local://${datapath}/${year}/OCDB"
+    ocdb="local://${ocdbpath}/${year}/OCDB"
     m4 -D ___OCDB___=$ocdb \
        -D ___FILENAME___=$file \
        -D ___NEVENTS___=$nevents \
        -D ___STARTEVENT___=$startevent \
        -D ___RECDETECTORS___="$detectors" \
        -D ___TRD_RECOPTIONS___="$rec_options" \
-       ../rec.C > $chunk/rec.C
+       ${scriptpath}/rec.C > $chunk/rec.C
 
     # skip chunk if we don't find it
     [[ -e $file ]] || continue;
@@ -96,16 +123,22 @@ for file in `find $datapath/*/*/$run/raw -iname "*.*.root"`; do
     #  #BSUB -oo rec-%J-%I-out.log
     #  #BSUB -eo rec-%J-%I-err.log
 
-    echo "#!/bin/sh
-      #BSUB -o $chunk/batch.log
-      #BSUB -q $queue
-      #BSUB -J rec-$chunk
-      . ../alijkl $alirootversion
-      cd $chunk
-      printenv > environment.log
-      aliroot -l -q -b ./rec.C" | bsub
+    command=". ${scriptpath}/alijkl $alirootversion; cd $chunk; printenv > environment.log; aliroot -l -q -b ./rec.C;"
+
+    if [ "$runlocal" -eq 0 ]; then
+      echo "#!/bin/sh
+        #BSUB -o $chunk/batch.log
+        #BSUB -q $queue
+        #BSUB -J rec-$chunk
+        $command" | bsub
   
-    touch $chunk/.queued
+      touch $chunk/.queued
+    else
+      echo "Executing locally..." 
+      (
+        eval "$command" > "$chunk/local.log" 2>&1
+      )
+    fi
   
     njobs=$(($njobs + 1));
 done
