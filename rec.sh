@@ -154,7 +154,7 @@ for file in $filelist; do
     if [ "x$queue" == "xrunlocal" ]; then
       echo "Executing locally..." 
       (
-        eval "$command" > "$chunk/recolocal.log" 2>&1
+        eval "$command" > "$chunk/reco.local.log" 2>&1
       )
 
     elif [ "x$queue" == "xnorun" ]; then
@@ -162,7 +162,7 @@ for file in $filelist; do
 
     else
       echo "#!/bin/sh
-        #BSUB -o $chunk/recobatch.log
+        #BSUB -o $chunk/reco.batch.log
         #BSUB -q $queue
         #BSUB -J rec-$chunk
         $command" | bsub

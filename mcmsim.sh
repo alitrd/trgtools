@@ -7,7 +7,6 @@ function show_help() {
   echo "    -q <q>   Specify batch queue to submit to"
   echo "    -l        Run on local machine (useful for testing)"
   echo "    -o <o>    Specify output directory"
-  echo "    -d <p>    Specify input data base path"
   echo "    -m <i>    Limit maximum number of jobs (=chunks) to submit to <i>"
   echo "    -n <i>    Process <i> events per chunk, starting from <s>"
   echo "    -s <i>    Specify start event <s>"
