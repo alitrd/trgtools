@@ -6,7 +6,7 @@ Bool_t mcmsim(Int_t nEvents = 10)
   AliTRDtrapConfigHandler trapcfghandler;
   AliTRDtrapConfig *trapcfg = AliTRDtrapConfig::Instance();
   trapcfghandler.LoadConfig();
-  
+  trapcfghandler.LoadConfig("demoLUT1D.datx");
 
   ifelse(___TRACKLET_CONFIG___, `mc-tc', `
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQS0,  1);
@@ -129,8 +129,7 @@ Bool_t mcmsim(Int_t nEvents = 10)
       }
     }
 
-    //rl->GetLoader("TRDLoader")->GetDataLoader("tracklets")->WriteData("OVERWRITE");
-    rl->GetLoader("TRDLoader")->GetDataLoader("tracklets")->WriteData("CREATE");
+    rl->GetLoader("TRDLoader")->GetDataLoader("tracklets")->WriteData("OVERWRITE");
     printf("processed event: %i\n", iEvent);
 
   }

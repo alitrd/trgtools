@@ -104,7 +104,7 @@ for file in `find $inputdir -iname "TRD.Tracklets.root"`; do
   m4 $scriptpath/gtusim.C.m4 > $outpath/gtusim.C
   command="aliroot -b -q -l gtusim.C"
   if [ "x$queue" == "xrunlocal" ]; then
-    command="$command > gtusim.local.log 2&>1"
+    command="$command > gtusim.local.log 2>&1"
   fi
 
   if [ "x$queue" == "xnorun" ] ; then
