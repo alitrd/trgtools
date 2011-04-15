@@ -10,7 +10,9 @@ function show_help() {
   echo "    -l        Run on local machine (useful for testing)"
   echo "    -o <o>    Specify output directory (default: $def_outdatapath)"
   echo "    -d <p>    Specify input data base path (default: $def_indatapath)"
+  echo "                [Normally derived automatically from run number or list of chunks]"
   echo "    -b <p>    Specify OCDB base path (default: $def_indatapath)"
+  echo "                [Normally automatically derived]"
   echo "    -m <i>    Limit maximum number of jobs (=chunks) to submit to <i>"
   echo "    -n <i>    Process <i> events per chunk, starting from <s>"
   echo "    -s <i>    Specify start event <s>"
@@ -34,15 +36,20 @@ rec_options="dc"
 nevents=10001
 startevent=0
 maxjobs=10
+ocdbother=0
 queue=alice-t3_2h
 
-while getopts "hq:m:n:s:d:v:lo:b:" OPTION
+while getopts "hq:m:n:Ns:d:v:lo:b:" OPTION
 do 
   case $OPTION in
     h)  show_help
         exit 0
         ;; 
     q)  queue=$OPTARG
+        ;;
+    l)  queue="runlocal"
+        ;;
+    N)  queue="norun"
         ;;
     m)  maxjobs=$OPTARG
         ;;
@@ -54,11 +61,10 @@ do
         ;;
     v)  alirootversion=$OPTARG
         ;;
-    l)  runlocal=1
-        ;;
     o)  outdatapath=$OPTARG
         ;;
     b)  ocdbpath=$OPTARG
+        ocdbother=1
         ;;
     ?)  show_help
         exit 1
@@ -75,22 +81,15 @@ fi;
 runnr=$1
 
 #--------------------------------------------------------------------------------
-execmode="BATCH"
-if [ "$runlocal" -eq 1 ]; then
-  execmode="LOCAL"
-fi
-
 echo "#-------------------------------------------------------------------"
 echo "#  RunNumber:      $runnr"
 echo "#  Queue:          $queue"
 echo "#  MaxJobs:        $maxjobs"
 echo "#  DatapathIn:     $indatapath"
 echo "#  DatapathOut:    $outdatapath"
-echo "#  Execution       $execmode"
 echo "#  AliRootVersion: $alirootversion"
 echo "#    nevents: $nevents     startevent: $startevent"
 echo "#-------------------------------------------------------------------"
-
 #--------------------------------------------------------------------------------
 
 echo "Runnumber: $runnr"
@@ -121,14 +120,19 @@ for file in $filelist; do
     echo $year $chunk;
     [[ -d $chunk ]] || mkdir $chunk
 
-    ocdb="local://${ocdbpath}/${year}/OCDB"
+    if [ "$ocdbother" -eq 1 ]; then
+      ocdb=${ocdbpath}
+    else
+      ocdb="local://${ocdbpath}/${year}/OCDB"
+    fi
+
     m4 -D ___OCDB___=$ocdb \
        -D ___FILENAME___=$file \
        -D ___NEVENTS___=$nevents \
        -D ___STARTEVENT___=$startevent \
        -D ___RECDETECTORS___="$detectors" \
        -D ___TRD_RECOPTIONS___="$rec_options" \
-       ${scriptpath}/rec.C > $chunk/rec.C
+       ${scriptpath}/rec.C.m4 > $chunk/rec.C
 
     # skip chunk if we don't find it
     [[ -e $file ]] || continue;
@@ -147,19 +151,23 @@ for file in $filelist; do
 
     command=". ${scriptpath}/alijkl $alirootversion; cd $chunk; printenv > environment.log; aliroot -l -q -b ./rec.C;"
 
-    if [ "$runlocal" -eq 0 ]; then
+    if [ "x$queue" == "xrunlocal" ]; then
+      echo "Executing locally..." 
+      (
+        eval "$command" > "$chunk/recolocal.log" 2>&1
+      )
+
+    elif [ "x$queue" == "xnorun" ]; then
+      echo "Not running reconstruction..."
+
+    else
       echo "#!/bin/sh
-        #BSUB -o $chunk/batch.log
+        #BSUB -o $chunk/recobatch.log
         #BSUB -q $queue
         #BSUB -J rec-$chunk
         $command" | bsub
   
       touch $chunk/.queued
-    else
-      echo "Executing locally..." 
-      (
-        eval "$command" > "$chunk/local.log" 2>&1
-      )
     fi
   
     njobs=$(($njobs + 1));
