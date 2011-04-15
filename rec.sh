@@ -30,7 +30,7 @@ runlocal=0
 
 alirootversion="dev"
 detectors="ITS TPC TRD TOF"
-rec_options="tp,tw,dc"
+rec_options="dc"
 nevents=10001
 startevent=0
 maxjobs=10

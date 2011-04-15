@@ -1,7 +1,18 @@
 #!/bin/bash
 
 function show_help() {
-  echo "usage: mcmsim.sh <options> <basepath>"
+  echo "MCM simulation script"
+  echo "  Usage: `basename $0` [options] <inputdir>"
+  echo "  Options:"
+  echo "    -q <q>   Specify batch queue to submit to"
+  echo "    -l        Run on local machine (useful for testing)"
+  echo "    -o <o>    Specify output directory"
+  echo "    -d <p>    Specify input data base path"
+  echo "    -m <i>    Limit maximum number of jobs (=chunks) to submit to <i>"
+  echo "    -n <i>    Process <i> events per chunk, starting from <s>"
+  echo "    -s <i>    Specify start event <s>"
+  echo "    -v <c>    Specify aliroot version to use (default: dev)"
+  echo "    -h        Show this help"
 }
 
 #--------------------------------------------------------------------------------
