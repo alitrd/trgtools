@@ -1,12 +1,12 @@
 
-Bool_t mcmsim(Int_t nEvents = 10) 
+Bool_t mcmsim(Int_t nEvents = -1)
 {
   //  AliLog::SetClassDebugLevel("AliTRDmcmSim", 10);
 
   AliTRDtrapConfigHandler trapcfghandler;
   AliTRDtrapConfig *trapcfg = AliTRDtrapConfig::Instance();
   trapcfghandler.LoadConfig();
-  trapcfghandler.LoadConfig("demoLUT1D.datx");
+  trapcfghandler.LoadConfig("LUT_Pion_CutOnUniqueTracklets-110418-01.datx");
 
   ifelse(___TRACKLET_CONFIG___, `mc-tc', `
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQS0,  2);
@@ -20,10 +20,18 @@ Bool_t mcmsim(Int_t nEvents = 10)
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPVBY, 0);
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPVT, 10);
 
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kFTBY,   1);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kFTAL, 200);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kFTLS,   0);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kFTLL, 200);
+
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kFPNP,  40);
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPHT, 150);
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFP,  28);
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCL,   2);
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCT,  10);
+
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kC13CPUA, 30);
 
   trapcfg->SetDmem(0xc025, 20 << 5); // 5 add. bin. digits from ndrift
 ')
@@ -40,10 +48,15 @@ Bool_t mcmsim(Int_t nEvents = 10)
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPVBY, 0);
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPVT, 10);
 
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kFTBY,   0);
+
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kFPNP,  40);
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPHT, 200);
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFP,  40);
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCL,   2);
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCT,  10);
+
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kC13CPUA, 30);
 
   trapcfg->SetDmem(0xc025, 24 << 5); // 5 add. bin. digits from ndrift
 ')
@@ -60,10 +73,18 @@ Bool_t mcmsim(Int_t nEvents = 10)
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPVBY, 0);
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPVT, 10);
 
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kFTBY,   1);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kFTAL, 200);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kFTLS,   0);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kFTLL, 200);
+
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kFPNP,  40);
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPHT, 150);
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFP,  28);
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCL,   2);
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCT,  10);
+
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kC13CPUA, 27);
 
   trapcfg->SetDmem(0xc025, 20 << 5); // 5 add. bin. digits from ndrift
 ')
@@ -80,16 +101,23 @@ Bool_t mcmsim(Int_t nEvents = 10)
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPVBY, 0);
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPVT, 10);
 
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kFTBY,   0);
+
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kFPNP,  40);
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPHT, 200);
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFP,  40);
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCL,   2);
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCT,  10);
+
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kC13CPUA, 27);
 
   trapcfg->SetDmem(0xc025, 24 << 5); // 5 add. bin. digits from ndrift
 ')
 
 
   AliRunLoader *rl = AliRunLoader::Open("galice.root");
+  if (nEvents < 0)
+    nEvents = rl->GetNumberOfEvents();
 
   AliTRDdigitsManager *digMgr = new AliTRDdigitsManager();
   AliTRDmcmSim *mcmsim = new AliTRDmcmSim();
@@ -118,8 +146,8 @@ Bool_t mcmsim(Int_t nEvents = 10)
 	  mcmsim->SetData(digits, 0x0);
 	  mcmsim->Filter();
 	  mcmsim->Tracklet();
-	  if (mcmsim->GetTrackletArray()->GetEntries() > 0)
-	    mcmsim->Print("T");
+// 	  if (mcmsim->GetTrackletArray()->GetEntries() > 0)
+// 	    mcmsim->Print("T");
 	  mcmsim->StoreTracklets();
 	}
       }

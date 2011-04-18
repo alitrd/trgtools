@@ -108,13 +108,14 @@ for file in `find $inputdir -iname "TRD.Digits.root"`; do
 
     mkdir -p $outpath
 
-    for i in galice.root TRD.Digits.root AliESDfriends.root AliESDs.root ; do
+    for i in `find $inpath -name *.root`; do
 	#cp $inpath/$i $outpath;
-	ln -sf $inpath/$i $outpath;
+	ln -sf $i $outpath;
     done
 
-    #rm $outpath/TRD.Digits.root
-    #cp  $inpath/TRD.Tracklets.root $outpath
+    # copy tracklets instead of symlinking
+    rm -f $outpath/TRD.Tracklets.root
+    cp  $inpath/TRD.Tracklets.root $outpath
 
     m4 \
 	-D ___TRACKLET_CONFIG___=$trklconfig\
