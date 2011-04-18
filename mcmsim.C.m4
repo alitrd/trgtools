@@ -9,87 +9,83 @@ Bool_t mcmsim(Int_t nEvents = 10)
   trapcfghandler.LoadConfig("demoLUT1D.datx");
 
   ifelse(___TRACKLET_CONFIG___, `mc-tc', `
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQS0,  1);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQE0,  8);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQS1,  8);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQE1, 28);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQS0,  2);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQE0, 22);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQS1, 22);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQE1, 27);
 
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFS,  4);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFE, 24);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFS,   2);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFE,  22);
 
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPVBY, 0);
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPVT, 10);
 
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPHT, 100);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFP,  40);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCL, 1);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCT, 14);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPHT, 150);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFP,  28);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCL,   2);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCT,  10);
 
-  trapcfg->SetDmem(0xc022, 6 << 5); // 5 add. bin. digits from position
   trapcfg->SetDmem(0xc025, 20 << 5); // 5 add. bin. digits from ndrift
 ')
 
   ifelse(___TRACKLET_CONFIG___, `mc-notc', `
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQS0,  1);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQE0,  8);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQS1,  8);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQE1, 28);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQS0,  2);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQE0, 22);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQS1, 22);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQE1, 27);
 
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFS,  4);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFE, 24);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFS,   2);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFE,  22);
 
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPVBY, 0);
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPVT, 10);
 
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPHT, 100);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPHT, 200);
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFP,  40);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCL, 1);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCT, 14);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCL,   2);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCT,  10);
 
-  trapcfg->SetDmem(0xc022, 6 << 5); // 5 add. bin. digits from position
-  trapcfg->SetDmem(0xc025, 20 << 5); // 5 add. bin. digits from ndrift
+  trapcfg->SetDmem(0xc025, 24 << 5); // 5 add. bin. digits from ndrift
 ')
 
   ifelse(___TRACKLET_CONFIG___, `real-tc', `
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQS0,  1);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQE0,  8);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQS1,  8);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQE1, 28);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQS0,  2);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQE0, 22);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQS1, 22);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQE1, 27);
 
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFS,  4);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFE, 24);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFS,   2);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFE,  22);
 
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPVBY, 0);
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPVT, 10);
 
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPHT, 100);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFP,  40);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCL, 1);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCT, 14);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPHT, 150);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFP,  28);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCL,   2);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCT,  10);
 
-  trapcfg->SetDmem(0xc022, 6 << 5); // 5 add. bin. digits from position
   trapcfg->SetDmem(0xc025, 20 << 5); // 5 add. bin. digits from ndrift
 ')
 
   ifelse(___TRACKLET_CONFIG___, `real-notc', `
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQS0,  1);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQE0,  8);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQS1,  8);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQE1, 28);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQS0,  2);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQE0, 22);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQS1, 22);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQE1, 27);
 
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFS,  4);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFE, 24);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFS,   2);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFE,  22);
 
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPVBY, 0);
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPVT, 10);
 
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPHT, 100);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPHT, 200);
   trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFP,  40);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCL, 1);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCT, 14);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCL,   2);
+  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCT,  10);
 
-  trapcfg->SetDmem(0xc022, 6 << 5); // 5 add. bin. digits from position
-  trapcfg->SetDmem(0xc025, 20 << 5); // 5 add. bin. digits from ndrift
+  trapcfg->SetDmem(0xc025, 24 << 5); // 5 add. bin. digits from ndrift
 ')
 
 
