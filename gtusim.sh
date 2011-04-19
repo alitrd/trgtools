@@ -97,8 +97,8 @@ for file in `find $inputdir -iname "TRD.Tracklets.root"`; do
 
   mkdir -p $outpath
 
-  for i in galice.root TRD.Tracklets.root; do
-    ln -sf $inpath/$i $outpath;
+  for i in `find $inpath -name *.root`; do
+    ln -sf $i $outpath;
   done
 
   m4 $scriptpath/gtusim.C.m4 > $outpath/gtusim.C
