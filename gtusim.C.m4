@@ -3,17 +3,23 @@ Bool_t gtusim(Int_t nEvents = -1)
   // AliLog::SetClassDebugLevel("AliTRDgtuSim", 10);
 
   AliTRDfeeParam::SetTracklet(kTRUE);
+  AliTRDgtuParam::SetDeltaY(39);
+  AliTRDgtuParam::SetDeltaAlpha(38);
 
   AliRunLoader *rl = AliRunLoader::Open("galice.root");
 
   TFile *esdFile = TFile::Open("AliESDs.root");
   TTree *esdTree = (TTree*) esdFile->Get("esdTree");
+//   TFile *esdFriendFile = TFile::Open("NewAliESDfriends.root");
+//   TTree *esdFriendTree = (TTree*) esdFriendFile->Get("esdFriendTree");
+
   AliESDEvent *esd = new AliESDEvent;
   esd->ReadFromTree(esdTree);
 
-  TFile *esdFileNew = TFile::Open("AliESDNews.root", "RECREATE");
+  TFile *esdFileNew = TFile::Open("NewAliESDs.root", "RECREATE");
   esdFileNew->cd();
-  TTree *esdTreeNew = new TTree("esdTree", "Tree with ESD objects"); 
+//   TTree *esdTreeNew = new TTree("esdTree", "Tree with ESD objects"); 
+  TTree *esdTreeNew = esdTree->CopyTree("", "", 0, 0); 
   AliESDEvent * esdnew = new AliESDEvent;
   esdnew->CreateStdContent();
   esdnew->WriteToTree(esdTreeNew);
@@ -49,6 +55,7 @@ Bool_t gtusim(Int_t nEvents = -1)
   }
 
   esdFileNew->cd();
+//   esdTreeNew->AddFriend(esdFriendTree);
   esdTreeNew->Write(esdTreeNew->GetName(), TObject::kOverwrite);
   esdFileNew->Close();
 
