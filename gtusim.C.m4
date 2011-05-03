@@ -17,12 +17,7 @@ Bool_t gtusim(Int_t nEvents = -1)
   esd->ReadFromTree(esdTree);
 
   TFile *esdFileNew = TFile::Open("NewAliESDs.root", "RECREATE");
-  esdFileNew->cd();
-//   TTree *esdTreeNew = new TTree("esdTree", "Tree with ESD objects"); 
-  TTree *esdTreeNew = esdTree->CopyTree("", "", 0, 0); 
-  AliESDEvent * esdnew = new AliESDEvent;
-  esdnew->CreateStdContent();
-  esdnew->WriteToTree(esdTreeNew);
+  TTree *esdTreeNew = esdTree->CloneTree(0);
 
   if (nEvents < 0 && esdTree)
     nEvents = esdTree->GetEntries();
@@ -43,8 +38,7 @@ Bool_t gtusim(Int_t nEvents = -1)
     rl->GetEvent(iEvent);
     trklLoader->Load();
 
-    *esdnew = *esd;
-    gtusim->RunGTU(trdLoader, esdnew);
+    gtusim->RunGTU(trdLoader, esd);
     esdTreeNew->Fill();
     // gtusim->WriteTracksToLoader();
 
