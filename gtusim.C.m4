@@ -1,6 +1,7 @@
-Bool_t gtusim(Int_t nEvents = -1) 
+Bool_t gtusim(Int_t nEvents = -1)
 {
-  // AliLog::SetClassDebugLevel("AliTRDgtuSim", 10);
+  // AliLog::SetClassDebugLevel("AliTRDgtuSim", 2);
+  // AliLog::SetClassDebugLevel("AliTRDgtuTMU", 10);
 
   AliTRDfeeParam::SetTracklet(kTRUE);
   AliTRDgtuParam::SetDeltaY(39);
@@ -8,16 +9,36 @@ Bool_t gtusim(Int_t nEvents = -1)
 
   AliRunLoader *rl = AliRunLoader::Open("galice.root");
 
-  TFile *esdFile = TFile::Open("AliESDs.root");
+  TFile *esdFile = TFile::Open("AliESDs.root", "READ");
   TTree *esdTree = (TTree*) esdFile->Get("esdTree");
-//   TFile *esdFriendFile = TFile::Open("NewAliESDfriends.root");
-//   TTree *esdFriendTree = (TTree*) esdFriendFile->Get("esdFriendTree");
 
   AliESDEvent *esd = new AliESDEvent;
+  // esd->CreateStdContent(kTRUE);
+  // printf("found: %p, branch: %p\n", esd->FindListObject("AliESDfriend"), esdTree->GetBranch("ESDfriend."));
   esd->ReadFromTree(esdTree);
+  TObject *friendObject = esd->FindListObject("AliESDfriend");
+  if (friendObject) {
+    esd->GetList()->Remove(friendObject);
+  }
 
   TFile *esdFileNew = TFile::Open("NewAliESDs.root", "RECREATE");
-  TTree *esdTreeNew = esdTree->CloneTree(0);
+  TTree *esdTreeNew = new TTree(esdTree->GetName(), esdTree->GetTitle());
+  esd->WriteToTree(esdTreeNew);
+  esd->AddObject(friendObject);
+  esdTreeNew->GetUserInfo()->Add(esd);
+  // printf("branch: %p\n", esdTreeNew->GetBranch("ESDfriend."));
+
+  esdTree->AddFriend("esdFriendTree", "AliESDfriends.root");
+  esdTree->SetBranchStatus("ESDfriend.", 1);
+  AliESDfriend *esdFriend = new AliESDfriend;
+  esd->SetESDfriend(esdFriend);
+  if (esdFriend)
+    esdTree->SetBranchAddress("ESDfriend.", &esdFriend);
+
+  TFile *esdFriendFileNew = TFile::Open("NewAliESDfriends.root", "RECREATE");
+  TTree *esdFriendTreeNew = new TTree("esdFriendTree", "Tree with ESD Friend objects");
+  if (esdFriend)
+    esdFriendTreeNew->Branch("ESDfriend.", "AliESDfriend", &esdFriend);
 
   if (nEvents < 0 && esdTree)
     nEvents = esdTree->GetEntries();
@@ -35,11 +56,28 @@ Bool_t gtusim(Int_t nEvents = -1)
   for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
 
     esdTree->GetEntry(iEvent);
+    esd->SetESDfriend(esdFriend);
+
     rl->GetEvent(iEvent);
     trklLoader->Load();
 
-    gtusim->RunGTU(trdLoader, esd);
+    // printf("#Tracks before sim: %i\n", esd->GetNumberOfTrdTracks());
+    gtusim->RunGTU(0x0, esd);
+    // printf("#Tracks after sim: %i\n", esd->GetNumberOfTrdTracks());
+
+    // for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTrdTracks(); iTrack++) {
+    //   AliESDTrdTrack *trk = esd->GetTrdTrack(iTrack);
+    //   // printf("track %i: 0x%016llx, label: %i, PID: %i\n",
+    //   //        iTrack, trk->GetTrackWord(), trk->GetLabel(), trk->GetPID());
+    //   for (Int_t iLayer = 0; iLayer < 6; iLayer++) {
+    //     AliESDTrdTracklet *trkl = trk->GetTracklet(iLayer);
+    //     if (trkl)
+    //       printf("layer %i: 0x%08x\n", iLayer, trkl->GetTrackletWord());
+    //   }
+    // }
+
     esdTreeNew->Fill();
+    esdFriendTreeNew->Fill();
     // gtusim->WriteTracksToLoader();
 
     if (gtuLoader)
@@ -49,9 +87,12 @@ Bool_t gtusim(Int_t nEvents = -1)
   }
 
   esdFileNew->cd();
-//   esdTreeNew->AddFriend(esdFriendTree);
-  esdTreeNew->Write(esdTreeNew->GetName(), TObject::kOverwrite);
+  esdTreeNew->Write();
   esdFileNew->Close();
+
+  esdFriendFileNew->cd();
+  esdFriendTreeNew->Write();
+  esdFriendFileNew->Close();
 
   gtusim->WriteTreesToFile();
 
