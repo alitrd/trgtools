@@ -61,7 +61,7 @@ do
 done
 shift $(($OPTIND - 1))
 
-[[ $# > 0 ]]  && inputdir=$(readlink -f $1)
+[[ $# > 0 ]]  && inputdir=$(readlink -f $1 | sed -e 's/\/SAT//')
 
 [[ x$outputdir == x ]] && outputdir=$inputdir
 
@@ -147,7 +147,7 @@ for file in `find $inputdir -iname "TRD.Digits.root"`; do
 	echo "#!/bin/sh
           #BSUB -o $outpath/mcmsim.batch.log
           #BSUB -q $queue
-          . $(dirname $0)/alijkl $alirootversion
+          . ${scriptpath}/alijkl $alirootversion
           cd $outpath
           printenv > mcmsim.environment.log
           aliroot -l -q -b mcmsim.C" | bsub

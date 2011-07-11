@@ -26,6 +26,7 @@ if [ $# -eq 1 ]; then
 	    export ALICE=$PREPATH/aliroot;
 	    ALICE_LEVEL=trunk;
 	    export ALICE_ROOT=$ALICE/$ALICE_LEVEL/src;
+	    export ALICE_BUILD=$ALICE/$ALICE_LEVEL/build;
 	    export ROOTSYS=$PREPATH/root/v5-27-06b;
 	    export GEANT3DIR=$PREPATH/geant3/v1-11/
 	    export GEANT3PATH=$PREPATH/geant3/v1-11/lib/tgt_$ALICE_TARGET;
@@ -36,6 +37,7 @@ if [ $# -eq 1 ]; then
 	    export ALICE=$PREPATH/aliroot;
 	    ALICE_LEVEL=trunk-git;
 	    export ALICE_ROOT=$ALICE/$ALICE_LEVEL;
+	    export ALICE_BUILD=$ALICE/$ALICE_LEVEL;
 	    export ROOTSYS=$PREPATH/root/trunk;
 	    export GEANT3PATH=$PREPATH/geant3/v1-11/lib/tgt_$ALICE_TARGET;
 	    echo Setting up AliRoot $ALICE_LEVEL;
@@ -45,6 +47,18 @@ if [ $# -eq 1 ]; then
 	    export ALICE=$PREPATH/aliroot;
 	    ALICE_LEVEL=dev;
 	    export ALICE_ROOT=$ALICE/$ALICE_LEVEL/src;
+	    export ALICE_BUILD=$ALICE/$ALICE_LEVEL/build;
+	    export ROOTSYS=$PREPATH/root/v5-27-06b;
+	    export GEANT3DIR=$PREPATH/geant3/v1-11/
+	    export GEANT3PATH=$PREPATH/geant3/v1-11/lib/tgt_$ALICE_TARGET;
+	    echo Setting up AliRoot $ALICE_LEVEL;
+	    ;;
+
+	    (dev2)
+	    export ALICE=$PREPATH/aliroot;
+	    ALICE_LEVEL=dev;
+	    export ALICE_ROOT=$ALICE/$ALICE_LEVEL/src;
+	    export ALICE_BUILD=$ALICE/$ALICE_LEVEL/build-new;
 	    export ROOTSYS=$PREPATH/root/v5-27-06b;
 	    export GEANT3DIR=$PREPATH/geant3/v1-11/
 	    export GEANT3PATH=$PREPATH/geant3/v1-11/lib/tgt_$ALICE_TARGET;
@@ -80,5 +94,5 @@ for dir in `echo $LD_LIBRARY_PATH | sed 's/:/ /g'`; do
 done;
 export NEWLD_PATH;
 
-export PATH=$ROOTSYS/bin:$ALICE/$ALICE_LEVEL/build/bin/tgt_${ALICE_TARGET}:$ALIEN_PATH/api/bin/:$NEWPATH
+export PATH=$ROOTSYS/bin:$ALICE_BUILD/bin/tgt_${ALICE_TARGET}:$ALIEN_PATH/api/bin/:$NEWPATH
 export LD_LIBRARY_PATH=$ALIEN_LD_LIBRARY_PATH:$ROOTSYS/lib:$ALICE/$ALICE_LEVEL/build/lib/tgt_${ALICE_TARGET}:${GEANT3PATH}:$NEWLD_PATH

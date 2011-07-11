@@ -4,114 +4,23 @@ Bool_t mcmsim(Int_t nEvents = -1)
   //  AliLog::SetClassDebugLevel("AliTRDmcmSim", 10);
 
   AliTRDtrapConfigHandler trapcfghandler;
-  AliTRDtrapConfig *trapcfg = AliTRDtrapConfig::Instance();
-  trapcfghandler.LoadConfig();
-  trapcfghandler.LoadConfig("LUT_Pion_CutOnUniqueTracklets-110418-01.datx");
+  trapcfghandler.ResetMCMs();
+  trapcfghandler.LoadConfig("/u/jklein/temp/init.dat");
 
   ifelse(___TRACKLET_CONFIG___, `mc-tc', `
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQS0,  2);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQE0, 22);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQS1, 22);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQE1, 27);
-
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFS,   2);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFE,  22);
-
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPVBY, 0);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPVT, 10);
-
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kFTBY,   1);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kFTAL, 200);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kFTLS,   0);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kFTLL, 200);
-
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kFPNP,  40);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPHT, 150);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFP,  28);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCL,   2);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCT,  10);
-
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kC13CPUA, 30);
-
-  trapcfg->SetDmem(0xc025, 20 << 5); // 5 add. bin. digits from ndrift
+  trapcfghandler.LoadConfig("/u/jklein/temp/cfg1806.dat");	
 ')
 
   ifelse(___TRACKLET_CONFIG___, `mc-notc', `
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQS0,  2);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQE0, 22);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQS1, 22);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQE1, 27);
-
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFS,   2);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFE,  22);
-
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPVBY, 0);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPVT, 10);
-
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kFTBY,   0);
-
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kFPNP,  40);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPHT, 200);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFP,  40);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCL,   2);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCT,  10);
-
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kC13CPUA, 30);
-
-  trapcfg->SetDmem(0xc025, 24 << 5); // 5 add. bin. digits from ndrift
+  trapcfghandler.LoadConfig("/u/jklein/temp/cfg1806.dat");	
 ')
 
   ifelse(___TRACKLET_CONFIG___, `real-tc', `
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQS0,  2);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQE0, 22);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQS1, 22);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQE1, 27);
-
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFS,   2);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFE,  22);
-
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPVBY, 0);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPVT, 10);
-
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kFTBY,   1);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kFTAL, 200);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kFTLS,   0);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kFTLL, 200);
-
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kFPNP,  40);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPHT, 150);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFP,  28);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCL,   2);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCT,  10);
-
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kC13CPUA, 27);
-
-  trapcfg->SetDmem(0xc025, 20 << 5); // 5 add. bin. digits from ndrift
+  trapcfghandler.LoadConfig("/u/jklein/temp/cfg1806.dat");	
 ')
 
   ifelse(___TRACKLET_CONFIG___, `real-notc', `
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQS0,  2);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQE0, 22);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQS1, 22);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPQE1, 27);
-
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFS,   2);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFE,  22);
-
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPVBY, 0);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPVT, 10);
-
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kFTBY,   0);
-
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kFPNP,  40);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPHT, 200);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPFP,  40);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCL,   2);
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kTPCT,  10);
-
-  trapcfg->SetTrapReg(AliTRDtrapConfig::kC13CPUA, 27);
-
-  trapcfg->SetDmem(0xc025, 24 << 5); // 5 add. bin. digits from ndrift
+  trapcfghandler.LoadConfig("/u/jklein/temp/cfg1806.dat");	
 ')
 
 

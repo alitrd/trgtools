@@ -55,7 +55,7 @@ do
 done
 shift $(($OPTIND - 1))
 
-[[ $# > 0 ]]  && inputdir=$(readlink -f $1)
+[[ $# > 0 ]]  && inputdir=$(readlink -f $1 | sed -e 's/\/SAT//')
 
 [[ x$outputdir == x ]] && outputdir=$inputdir
 
