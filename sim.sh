@@ -11,22 +11,22 @@ function show_help() {
   echo "                [Normally automatically derived]"
   echo "    -m <i>    Limit maximum number of jobs (=chunks) to submit to <i>"
   echo "    -n <i>    Process <i> events per chunk, starting from <s>"
+  echo "    -t <type> process to simulate, e.g. kPythia6Jets104_125 (default: $def_simtype)"
   echo "    -v <c>    Specify aliroot version to use (default: dev)"
   echo "    -h        Show this help"
 }
 
 #--------------------------------------------------------------------------------
-def_indatapath="/lustre/alice/alien/alice/data"
-def_outdatapath="/lustre/alice/pachmay_2/trd_trigger"
+def_outdatapath="/tmp/test"
+def_simtype="kPythia6"
 
-indatapath=$def_indatapath
 outdatapath=$def_outdatapath
 scriptpath=`dirname $(readlink -f $0)`
 ocdbpath=$indatapath
 runlocal=0
 
 alirootversion="dev"
-simtype=kPythia6
+simtype=$def_simtype
 nevents=100
 maxjobs=10
 ocdbother=0
@@ -57,6 +57,8 @@ do
     b)  ocdbpath=$OPTARG
         ocdbother=1
         ;;
+    t)  simtype=$OPTARG
+	;;
     ?)  echo "Unknown option: $OPTION"
 	show_help
         exit 1
@@ -80,19 +82,23 @@ echo "Max no. of jobs to be submitted: $maxjobs"
 sleep 2;
 
 # count jobs already submitted
+ijob=-1;
 njobs=0;
 
 [[ -d $outdatapath ]] || mkdir -p $outdatapath
 pushd $outdatapath
 
-for job in `seq 0 $maxjobs`; do 
+
+while [ true ]; do
 
     # if max no of jobs not yet exceeded submit the job
     if [ $njobs -ge $maxjobs ]; then
 	    break;
     fi;
 
-    chunk=`printf %04d $job`
+    ijob=$((1+$ijob))
+
+    chunk=`printf %04d $ijob`
 
     # skip chunk if it's already simulated
     [[ -e $chunk/galice.root ]] && continue;
@@ -109,10 +115,10 @@ for job in `seq 0 $maxjobs`; do
 
     m4 -D ___OCDB___=$ocdb \
        -D ___NEVENTS___=$nevents \
-       ${scriptpath}/sim.C.m4 > $chunk/sim.C
+       ${scriptpath}/macros/sim.C.m4 > $chunk/sim.C
 
     m4 -D ___SIMTYPE___=$simtype \
-       ${scriptpath}/Config.C.m4 > $chunk/Config.C
+       ${scriptpath}/macros/Config.C.m4 > $chunk/Config.C
 
     cp -r ${scriptpath}/trapcfg $chunk/
 
