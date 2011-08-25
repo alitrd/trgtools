@@ -117,6 +117,9 @@ for file in `find $inputdir -iname "TRD.Digits.root"`; do
     rm -f $outpath/TRD.Tracklets.root
     cp  $inpath/TRD.Tracklets.root $outpath
 
+    # copy TRAPconfig
+    cp -r ${scriptpath}/trapcfg $outpath/
+
     m4 \
 	-D ___TRACKLET_CONFIG___=$trklconfig\
 	$scriptpath/mcmsim.C.m4 > $outpath/mcmsim.C

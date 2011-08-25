@@ -5,22 +5,19 @@ Bool_t mcmsim(Int_t nEvents = -1)
 
   AliTRDtrapConfigHandler trapcfghandler;
   trapcfghandler.ResetMCMs();
-  trapcfghandler.LoadConfig("/u/jklein/temp/init.dat");
+  trapcfghandler.LoadConfig("trapcfg/initialize.r3610");
+  trapcfghandler.LoadConfig("trapcfg/cf_p_zs-s16-deh_tb27_trkl-b5n-fs1e25-ht200-qs0e25s25e24-pidlhc10dv2-pt100_ptrg.r4676");
 
   ifelse(___TRACKLET_CONFIG___, `mc-tc', `
-  trapcfghandler.LoadConfig("/u/jklein/temp/cfg1806.dat");	
 ')
 
   ifelse(___TRACKLET_CONFIG___, `mc-notc', `
-  trapcfghandler.LoadConfig("/u/jklein/temp/cfg1806.dat");	
 ')
 
   ifelse(___TRACKLET_CONFIG___, `real-tc', `
-  trapcfghandler.LoadConfig("/u/jklein/temp/cfg1806.dat");	
 ')
 
   ifelse(___TRACKLET_CONFIG___, `real-notc', `
-  trapcfghandler.LoadConfig("/u/jklein/temp/cfg1806.dat");	
 ')
 
 

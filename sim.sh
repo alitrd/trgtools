@@ -98,12 +98,12 @@ while [ true ]; do
 
     ijob=$((1+$ijob))
 
-    chunk=`printf %04d $ijob`
+    chunk=sim/${simtype}/`printf %09d $ijob`
 
     # skip chunk if it's already simulated
     [[ -e $chunk/galice.root ]] && continue;
     # or if queued
-    [[ -e $chunk/.queued ]] && continue;
+    [[ -e $chunk/.queued_sim ]] && continue;
 
     mkdir -p $chunk
 
@@ -120,7 +120,8 @@ while [ true ]; do
     m4 -D ___SIMTYPE___=$simtype \
        ${scriptpath}/macros/Config.C.m4 > $chunk/Config.C
 
-    cp -r ${scriptpath}/trapcfg $chunk/
+    mkdir $chunk/trapcfg
+    find ${scriptpath}/trapcfg -regex '.*.r[0-9]*' -exec cp {} $chunk/trapcfg/ \; ;
 
     command=". ${scriptpath}/alijkl $alirootversion; cd $chunk; printenv > environment.log; aliroot -l -q -b ./sim.C;"
 
@@ -136,11 +137,12 @@ while [ true ]; do
     else
       echo "#!/bin/sh
         #BSUB -o $chunk/sim.batch.log
+        #BSUB -e $chunk/sim.batch.err
         #BSUB -q $queue
-        #BSUB -J rec-$chunk
+        #BSUB -J sim-$chunk
         $command" | bsub
   
-      touch $chunk/.queued
+      touch $chunk/.queued_sim
     fi
   
     njobs=$(($njobs + 1));
