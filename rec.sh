@@ -102,36 +102,51 @@ njobs=0;
 if [[ "$runnr" =~ '^[0-9]*$' ]]; then
   echo 0
   run=`printf %09d $runnr`
-  filelist=`find $indatapath/*/*/$run/raw -iname "[0-9]*\.[0-9]*\.root"`
+  filelist=`find $indatapath/*/*/$run -iname "[0-9]*\.[0-9]*\.root" -or -iname "galice.root"`
 else
   echo 1
   run=`basename $runnr | sed -e 's/\..*//g'`
   filelist=`cat $runnr`
-fi
+fi;
 
-[[ -d $outdatapath/$run ]] || mkdir -p $outdatapath/$run
-pushd $outdatapath/$run
+[[ -d $outdatapath ]] || mkdir -p $outdatapath
+pushd $outdatapath
 
 for file in $filelist; do 
 
-    chunk=`basename $file .root`;
-    year=20${chunk:0:2}
-    period=`echo $file | sed -e 's/.*\(LHC[0-9].[^\/]\)\/.*/\1/g'`
-    echo $year $chunk;
-    [[ -d $chunk ]] || mkdir $chunk
+    echo $file
+
+    if [[ $file =~ 'galice' ]]; then
+	sim=1;
+	chunk=`dirname $file`;
+	inputfile="0x0";
+    else
+	sim=0;
+	chunk=$run/`basename $file .root`;
+	filename=`basename $file .root`;
+	year=20${filename:0:2}
+	period=`echo $file | sed -e 's/.*\(LHC[0-9].[^\/]\)\/.*/\1/g'`
+	inputfile="\"$file\"";
+    fi;
+
+    [[ -d $chunk ]] || mkdir -p $chunk
 
     if [ "$ocdbother" -eq 1 ]; then
       ocdb=${ocdbpath}
+    elif [ $sim -eq 1 ]; then
+      ocdb='local://$ALICE_ROOT/OCDB';
+      extra="man->SetSpecificStorage(\"GRP/GRP/Data\", Form(\"local://%s\",gSystem->pwd()));"
     else
       ocdb="local://${ocdbpath}/${year}/OCDB"
     fi
 
     m4 -D ___OCDB___=$ocdb \
-       -D ___FILENAME___=$file \
+       -D ___INPUTFILE___=$inputfile \
        -D ___NEVENTS___=$nevents \
        -D ___STARTEVENT___=$startevent \
        -D ___RECDETECTORS___="$detectors" \
        -D ___TRD_RECOPTIONS___="$rec_options" \
+       -D ___EXTRA___="$extra" \
        ${scriptpath}/rec.C.m4 > $chunk/rec.C
 
     # skip chunk if we don't find it
