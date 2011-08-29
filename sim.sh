@@ -19,7 +19,7 @@ function show_help() {
 #--------------------------------------------------------------------------------
 def_outdatapath="/tmp/test"
 def_simtype="kPythia6"
-def_scalebfield=-1.
+def_bfield="b5n";
 
 outdatapath=$def_outdatapath
 scriptpath=`dirname $(readlink -f $0)`
@@ -28,7 +28,7 @@ runlocal=0
 
 alirootversion="dev"
 simtype=$def_simtype
-scalebfield=$def_scalebfield
+bfield=$def_bfield
 nevents=100
 maxjobs=10
 ocdbother=0
@@ -61,7 +61,7 @@ do
         ;;
     t)  simtype=$OPTARG
 	;;
-    f)  scalebfield=`printf %3.1f $OPTARG`;
+    f)  bfield=$OPTARG
 	;;
     ?)  echo "Unknown option: $OPTION"
 	show_help
@@ -70,6 +70,21 @@ do
     esac
 done
 shift $(($OPTIND - 1))
+
+if [[ $bfield == "b5n" ]]; then
+    scalebfield=-1.;
+elif [ $bfield == "b5p" ]; then
+    scalebfield=1.;
+elif [ $bfield == "b0" ]; then
+    scalebfield=0.;
+else
+    echo "Unknown B-field";
+    exit -1;
+fi;
+
+echo $scalebfield
+
+exit
 
 #--------------------------------------------------------------------------------
 echo "#-------------------------------------------------------------------"
@@ -102,7 +117,7 @@ while [ true ]; do
 
     ijob=$((1+$ijob))
 
-    chunk=sim/${simtype}/`printf %09d $ijob`
+    chunk=${bfield}/${simtype}/`printf %09d $ijob`
 
     # skip chunk if it's already simulated
     [[ -e $chunk/galice.root ]] && continue;
