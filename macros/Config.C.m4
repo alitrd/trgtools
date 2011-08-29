@@ -75,7 +75,8 @@ enum PprRun_t
     kMuonCocktailCent1HighPt, kMuonCocktailPer1HighPt, kMuonCocktailPer4HighPt,
     kMuonCocktailCent1Single, kMuonCocktailPer1Single, kMuonCocktailPer4Single,
     kFlow_2_2000, kFlow_10_2000, kFlow_6_2000, kFlow_6_5000,
-    kHIJINGplus, kRunMax
+    kHIJINGplus, kRunMax,
+    kTrdBox
 };
 
 const char* pprRunName[] = {
@@ -97,7 +98,8 @@ const char* pprRunName[] = {
     "kMuonCocktailCent1", "kMuonCocktailPer1", "kMuonCocktailPer4",  
     "kMuonCocktailCent1HighPt", "kMuonCocktailPer1HighPt", "kMuonCocktailPer4HighPt",
     "kMuonCocktailCent1Single", "kMuonCocktailPer1Single", "kMuonCocktailPer4Single",
-    "kFlow_2_2000", "kFlow_10_2000", "kFlow_6_2000", "kFlow_6_5000", "kHIJINGplus"
+    "kFlow_2_2000", "kFlow_10_2000", "kFlow_6_2000", "kFlow_6_5000", "kHIJINGplus",
+    "TRD box generator"
 };
 
 enum PprRad_t
@@ -267,7 +269,7 @@ void Config()
     
     
 // Field
-    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1., smag));
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", ___SCALEB___, ___SCALEB___, smag));
 
     rl->CdGAFile();
 //
@@ -1457,6 +1459,48 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
         gGener = gener;
       }
         break;
+    case kTrdBox:
+      Int_t   nParticles = 2;
+
+      AliGenCocktail *gener = new AliGenCocktail();
+      gener->SetPhiRange(0, 360);
+      // Set pseudorapidity range from -0.9 to 0.9
+      Float_t thmin = EtaToTheta(.9);   // theta min. <---> eta max
+      Float_t thmax = EtaToTheta(-.9);  // theta max. <---> eta min 
+      gener->SetThetaRange(thmin,thmax);
+      gener->SetOrigin(0, 0, 0.);  //vertex position
+      gener->SetSigma(0, 0, 0);   //Sigma in (X,Y,Z) (cm) on IP position
+
+      AliGenBox *genbox = new AliGenBox(nParticles);
+      genbox->SetPart(kPiPlus);
+      genbox->SetPtRange(3., 10.00);
+      genbox->SetThetaRange(thmin, thmax);
+      gener->AddGenerator(genbox, "BoxGenPi+", 1);
+
+      AliGenBox *genbox2 = new AliGenBox(nParticles);
+      genbox2->SetPart(kPiMinus);
+      genbox2->SetPtRange(3., 10.00);
+      genbox2->SetThetaRange(thmin, thmax);
+      genbox2->SetPart(kPiMinus);
+      gener->AddGenerator(genbox2, "BoxGenPi-", 1);
+
+      AliGenBox *genbox3 = new AliGenBox(nParticles);
+      genbox3->SetPart(kElectron);
+      genbox3->SetPtRange(3., 10.00);
+      genbox3->SetThetaRange(thmin, thmax);
+      gener->AddGenerator(genbox3, "BoxGenElectron+", 1);
+
+      AliGenBox *genbox4 = new AliGenBox(nParticles);
+      genbox4->SetPart(-kElectron);
+      genbox4->SetPtRange(3., 10.00);
+      genbox4->SetThetaRange(thmin, thmax);
+      gener->AddGenerator(genbox4, "BoxGenPositron", 1);
+
+      gener->Init();
+
+      gGener = gener;
+
+      break;
       default: break;
     }
   

@@ -19,6 +19,7 @@ function show_help() {
 #--------------------------------------------------------------------------------
 def_outdatapath="/tmp/test"
 def_simtype="kPythia6"
+def_scalebfield=-1.
 
 outdatapath=$def_outdatapath
 scriptpath=`dirname $(readlink -f $0)`
@@ -27,12 +28,13 @@ runlocal=0
 
 alirootversion="dev"
 simtype=$def_simtype
+scalebfield=$def_scalebfield
 nevents=100
 maxjobs=10
 ocdbother=0
 queue=alice-t3_2h
 
-while getopts "hq:m:n:Ns:d:v:lo:b:" OPTION
+while getopts "hq:m:n:Ns:d:v:lo:b:t:f:" OPTION
 do 
   case $OPTION in
     h)  show_help
@@ -58,6 +60,8 @@ do
         ocdbother=1
         ;;
     t)  simtype=$OPTARG
+	;;
+    f)  scalebfield=`printf %3.1f $OPTARG`;
 	;;
     ?)  echo "Unknown option: $OPTION"
 	show_help
@@ -118,6 +122,7 @@ while [ true ]; do
        ${scriptpath}/macros/sim.C.m4 > $chunk/sim.C
 
     m4 -D ___SIMTYPE___=$simtype \
+       -D ___SCALEB___=$scalebfield \
        ${scriptpath}/macros/Config.C.m4 > $chunk/Config.C
 
     mkdir $chunk/trapcfg
