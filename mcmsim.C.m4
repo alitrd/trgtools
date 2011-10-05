@@ -1,12 +1,16 @@
 
-Bool_t mcmsim(Int_t nEvents = -1)
+Bool_t mcmsim(Int_t nEvents = ___NEVENTS___)
 {
-  //  AliLog::SetClassDebugLevel("AliTRDmcmSim", 10);
+  // AliLog::SetClassDebugLevel("AliTRDrawStream", 10);
 
-  AliTRDtrapConfigHandler trapcfghandler;
-  trapcfghandler.ResetMCMs();
-  trapcfghandler.LoadConfig("trapcfg/initialize.r3610");
-  trapcfghandler.LoadConfig("trapcfg/cf_p_zs-s16-deh_tb27_trkl-b5n-fs1e25-ht200-qs0e25s25e24-pidlhc10dv2-pt100_ptrg.r4676");
+  AliCDBManager::Instance()->SetDefaultStorage("local:///lustre/alice/alien/alice/data/2011/OCDB");
+  AliCDBManager::Instance()->SetSpecificStorage("TRD/Calib/TrapConfig", "local:///lustre/alice/jkl/ocdb");
+  AliCDBManager::Instance()->SetRun(0);
+
+  AliTRDtrapConfigHandler trapcfghandler(AliTRDcalibDB::Instance()->GetTrapConfig());
+  // trapcfghandler.ResetMCMs();
+  // trapcfghandler.LoadConfig("trapcfg/initialize.r3610");
+  // trapcfghandler.LoadConfig("trapcfg/cf_p_zs-s16-deh_tb27_trkl-b5n-fs1e25-ht200-qs0e25s25e24-pidlhc10dv2-pt100_ptrg.r4676");
 
   ifelse(___TRACKLET_CONFIG___, `mc-tc', `
 ')
@@ -27,7 +31,6 @@ Bool_t mcmsim(Int_t nEvents = -1)
 
   AliTRDdigitsManager *digMgr = new AliTRDdigitsManager();
   AliTRDmcmSim *mcmsim = new AliTRDmcmSim();
-  AliTRDmcmSim::SetApplyCut(kFALSE);
 
   for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
 
@@ -64,5 +67,92 @@ Bool_t mcmsim(Int_t nEvents = -1)
 
   }
 
-  return kTRUE;
+  // now write the ESDs
+  TFile *esdFile = TFile::Open("AliESDs.root", "READ");
+  TTree *esdTree = (TTree*) esdFile->Get("esdTree");
+
+  AliESDEvent *esd = new AliESDEvent;
+  esd->ReadFromTree(esdTree);
+  TObject *friendObject = esd->FindListObject("AliESDfriend");
+  if (friendObject) {
+    esd->GetList()->Remove(friendObject);
+  }
+
+  TFile *esdFileNew = TFile::Open("NewAliESDs.root", "RECREATE");
+  TTree *esdTreeNew = new TTree(esdTree->GetName(), esdTree->GetTitle());
+  esd->WriteToTree(esdTreeNew);
+  esd->AddObject(friendObject);
+  esdTreeNew->GetUserInfo()->Add(esd);
+
+  esdTree->AddFriend("esdFriendTree", "AliESDfriends.root");
+  esdTree->SetBranchStatus("ESDfriend.", 1);
+  AliESDfriend *esdFriend = new AliESDfriend;
+  esd->SetESDfriend(esdFriend);
+  if (esdFriend)
+    esdTree->SetBranchAddress("ESDfriend.", &esdFriend);
+
+  TFile *esdFriendFileNew = TFile::Open("NewAliESDfriends.root", "RECREATE");
+  TTree *esdFriendTreeNew = new TTree("esdFriendTree", "Tree with ESD Friend objects");
+  if (esdFriend)
+    esdFriendTreeNew->Branch("ESDfriend.", "AliESDfriend", &esdFriend);
+
+  if (nEvents < 0 && esdTree)
+    nEvents = esdTree->GetEntries();
+
+  for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
+
+    esdTree->GetEntry(iEvent);
+    esd->SetESDfriend(esdFriend);
+
+    rl->GetEvent(iEvent);
+
+    // read the simulated tracklets
+    AliLoader* loader = rl->GetLoader("TRDLoader");
+
+    TClonesArray *trklArray = new TClonesArray("AliTRDtrackletMCM");
+
+    AliDataLoader *trackletLoader = loader->GetDataLoader("tracklets");
+    if (trackletLoader) {
+      // simulated tracklets                                                                                                                   
+      trackletLoader->Load();
+      TTree *trackletTree = trackletLoader->Tree();
+
+      if (trackletTree) {
+	TBranch *trklbranch = trackletTree->GetBranch("mcmtrklbranch");
+	if (trklbranch && trklArray) {
+	  AliTRDtrackletMCM *trkl = 0x0;
+	  trklbranch->SetAddress(&trkl);
+	  for (Int_t iTracklet = 0; iTracklet < trklbranch->GetEntries(); iTracklet++) {
+	    trklbranch->GetEntry(iTracklet);
+	    new ((*trklArray)[trklArray->GetEntries()]) AliTRDtrackletMCM(*trkl);
+	  }
+	}
+      }
+    }
+
+    TList sortedTracklets;
+    Int_t indices[1080] = { 0 };
+    AliTRDrawStream::SortTracklets(trklArray, sortedTracklets, indices);
+
+    TIter trackletIter(&sortedTracklets);
+    AliESDTrdTracklet *tracklet = 0x0;
+    while (tracklet = (AliESDTrdTracklet*) trackletIter()) {
+      esd->AddTrdTracklet(tracklet);
+    }
+
+    esdTreeNew->Fill();
+    esdFriendTreeNew->Fill();
+
+    printf("processed event: %i\n", iEvent);
+  }
+
+  esdFileNew->cd();
+  esdTreeNew->Write();
+  esdFileNew->Close();
+
+  esdFriendFileNew->cd();
+  esdFriendTreeNew->Write();
+  esdFriendFileNew->Close();
+
+
 }

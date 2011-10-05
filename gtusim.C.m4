@@ -1,4 +1,4 @@
-Bool_t gtusim(Int_t nEvents = -1)
+Bool_t gtusim(Int_t nEvents = ___NEVENTS___)
 {
   // AliLog::SetClassDebugLevel("AliTRDgtuSim", 2);
   // AliLog::SetClassDebugLevel("AliTRDgtuTMU", 10);
@@ -62,7 +62,8 @@ Bool_t gtusim(Int_t nEvents = -1)
     trklLoader->Load();
 
     // printf("#Tracks before sim: %i\n", esd->GetNumberOfTrdTracks());
-    gtusim->RunGTU(0x0, esd);
+    gtusim->RunGTU(0x0, esd, -2); // raw tracklets
+    gtusim->RunGTU(0x0, esd, -1); // simulated tracklets
     // printf("#Tracks after sim: %i\n", esd->GetNumberOfTrdTracks());
 
     // for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTrdTracks(); iTrack++) {

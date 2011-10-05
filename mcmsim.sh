@@ -122,6 +122,7 @@ for file in `find $inputdir -iname "TRD.Digits.root"`; do
 
     m4 \
 	-D ___TRACKLET_CONFIG___=$trklconfig\
+	-D ___NEVENTS___=$nevents\
 	$scriptpath/mcmsim.C.m4 > $outpath/mcmsim.C
     cp *.datx $outpath/
 

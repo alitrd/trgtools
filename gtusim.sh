@@ -87,7 +87,6 @@ for file in `find $inputdir -iname "TRD.Tracklets.root"`; do
 
   # skip if we don't find the data
   [[ -e $inpath/galice.root ]] || continue;
-  [[ -e $inpath/TRD.Tracklets.root ]] || continue;
 
   # skip if the job in queued or output is available
   [[ -e $outpath/.queued ]] && continue;
@@ -98,10 +97,18 @@ for file in `find $inputdir -iname "TRD.Tracklets.root"`; do
   mkdir -p $outpath
 
   for i in `find $inpath -name *.root`; do
-    ln -sf $i $outpath;
+    if [[ $i =~ "NewAliESDs.root" ]]; then
+      ln -sf $i $outpath/AliESDs.root;
+    elif [[ $i =~ "NewAliESDfriends.root" ]]; then
+      ln -sf $i $outpath/AliESDfriends.root;
+    else
+      ln -sf $i $outpath;
+    fi;
   done
 
-  m4 $scriptpath/gtusim.C.m4 > $outpath/gtusim.C
+  m4 \
+      -D ___NEVENTS___=$nevents\
+      $scriptpath/gtusim.C.m4 > $outpath/gtusim.C
   command="aliroot -b -q -l gtusim.C"
   if [ "x$queue" == "xrunlocal" ]; then
     command="$command > gtusim.local.log 2>&1"
