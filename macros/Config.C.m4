@@ -113,7 +113,7 @@ enum PprTrigConf_t
 };
 
 const char * pprTrigConfName[] = {
-    "p-p","Pb-Pb"
+    "test","Pb-Pb"
 };
 
 // This part for configuration    
@@ -356,7 +356,7 @@ void Config()
     {
         //=================== ITS parameters ============================
 
-	AliITS *ITS  = new AliITSv11Hybrid("ITS","ITS v11Hybrid");
+	AliITS *ITS  = new AliITSv11("ITS","ITS v11");
     }
 
     if (iTPC)

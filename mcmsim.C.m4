@@ -62,7 +62,11 @@ Bool_t mcmsim(Int_t nEvents = ___NEVENTS___)
       }
     }
 
-    rl->GetLoader("TRDLoader")->GetDataLoader("tracklets")->WriteData("OVERWRITE");
+    AliLoader *trdLoader = rl->GetLoader("TRDLoader");
+    if (trdLoader)
+      trdLoader->GetDataLoader("tracklets")->WriteData("OVERWRITE");
+    else
+      printf("no TRD loader\n");
     printf("processed event: %i\n", iEvent);
 
   }

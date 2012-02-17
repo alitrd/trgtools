@@ -40,7 +40,7 @@ Bool_t gtusim(Int_t nEvents = ___NEVENTS___)
   if (esdFriend)
     esdFriendTreeNew->Branch("ESDfriend.", "AliESDfriend", &esdFriend);
 
-  if (nEvents < 0 && esdTree)
+  if ((nEvents < 0) || (nEvents > esdTree->GetEntries()))
     nEvents = esdTree->GetEntries();
 
   AliLoader *trdLoader = rl->GetLoader("TRDLoader");

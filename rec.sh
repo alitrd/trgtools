@@ -31,7 +31,7 @@ ocdbpath=$indatapath
 runlocal=0
 
 alirootversion="dev"
-detectors="ITS TPC TRD TOF"
+detectors="ITS TPC TRD TOF V0"
 rec_options="dc"
 nevents=10001
 startevent=0
