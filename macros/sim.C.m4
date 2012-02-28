@@ -2,9 +2,9 @@
 void sim(Int_t nev=___NEVENTS___) {
   
   AliSimulation simulator;
-  simulator.SetMakeSDigits("TRD TOF PHOS HMPID EMCAL FMD ZDC PMD T0 VZERO");
+  simulator.SetMakeSDigits("TRD TOF EMCAL VZERO");
   simulator.SetMakeDigitsFromHits("ITS TPC");
-  simulator.SetMakeDigits("ITS TPC TRD TOF PHOS HMPID EMCAL FMD ZDC PMD T0 VZERO");
+  simulator.SetMakeDigits("ITS TPC TRD TOF EMCAL VZERO");
 
   simulator.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   simulator.SetSpecificStorage("GRP/GRP/Data",

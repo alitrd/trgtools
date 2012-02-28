@@ -164,7 +164,7 @@ for file in $filelist; do
     #  #BSUB -oo rec-%J-%I-out.log
     #  #BSUB -eo rec-%J-%I-err.log
 
-    command=". ${scriptpath}/alijkl $alirootversion; cd $chunk; printenv > environment.log; aliroot -l -q -b ./rec.C;"
+    command=". ${scriptpath}/alijkl $alirootversion; cd $chunk; printenv > environment.log; aliroot -l -q -b ./rec.C; rm $(cat ${scriptpath}/remove.lst)"
 
     if [ "x$queue" == "xrunlocal" ]; then
       echo "Executing locally..." 
