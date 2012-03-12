@@ -136,9 +136,6 @@ while [ true ]; do
        -D ___SCALEB___=$scalebfield \
        ${scriptpath}/macros/Config.C.m4 > $chunk/Config.C
 
-    mkdir $chunk/trapcfg
-    find ${scriptpath}/trapcfg -regex '.*.r[0-9]*' -exec cp {} $chunk/trapcfg/ \; ;
-
     command=". ${scriptpath}/alijkl $alirootversion; cd $chunk; printenv > environment.log; aliroot -l -q -b ./sim.C;"
 
     if [ "x$queue" == "xrunlocal" ]; then
