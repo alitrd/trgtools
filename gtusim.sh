@@ -108,7 +108,7 @@ for file in `find $inputdir -iname "TRD.Tracklets.root"`; do
 
   m4 \
       -D ___NEVENTS___=$nevents\
-      $scriptpath/gtusim.C.m4 > $outpath/gtusim.C
+      $scriptpath/macros/gtusim.C.m4 > $outpath/gtusim.C
   command="aliroot -b -q -l gtusim.C"
   if [ "x$queue" == "xrunlocal" ]; then
     command="$command > gtusim.local.log 2>&1"

@@ -99,10 +99,11 @@ sleep 2;
 # count jobs already submitted
 njobs=0;
 
-if [[ "$runnr" =~ '^[0-9]*$' ]]; then
+if [[ "$runnr" =~ ^[0-9]*$ ]]; then
   echo 0
   run=`printf %09d $runnr`
-  filelist=`find $indatapath/*/*/$run -iname "[0-9]*\.[0-9]*\.root" -or -iname "galice.root"`
+  echo $run
+  filelist=`find $indatapath/*/*/${run} -iname "[0-9]*\.[0-9]*\.root" -or -iname "galice.root"`
 else
   echo 1
   run=`basename $runnr | sed -e 's/\..*//g'`
@@ -147,7 +148,7 @@ for file in $filelist; do
        -D ___RECDETECTORS___="$detectors" \
        -D ___TRD_RECOPTIONS___="$rec_options" \
        -D ___EXTRA___="$extra" \
-       ${scriptpath}/rec.C.m4 > $chunk/rec.C
+       ${scriptpath}/macros/rec.C.m4 > $chunk/rec.C
 
     # skip chunk if we don't find it
     [[ -e $file ]] || continue;
