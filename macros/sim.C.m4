@@ -1,6 +1,6 @@
 // -*-c++-*-
 void sim(Int_t nev=___NEVENTS___) {
-  
+
   AliSimulation simulator;
   simulator.SetMakeSDigits("TRD TOF EMCAL VZERO");
   simulator.SetMakeDigitsFromHits("ITS TPC");
@@ -9,11 +9,10 @@ void sim(Int_t nev=___NEVENTS___) {
   simulator.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   simulator.SetSpecificStorage("GRP/GRP/Data",
 			       Form("local://%s",gSystem->pwd()));
-  simulator.SetSpecificStorage("TRD/Calib/TrapConfig", "local:///lustre/alice/jkl/ocdb");
-  
+
   // no QA
-  simulator.SetRunQA(":") ; 
-  simulator.SetQARefDefaultStorage("local://$ALICE_ROOT/QAref") ;
+  simulator.SetRunQA(":");
+  simulator.SetQARefDefaultStorage("local://$ALICE_ROOT/QAref");
 
   TStopwatch timer;
   timer.Start();
