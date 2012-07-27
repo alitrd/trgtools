@@ -1,10 +1,9 @@
-
 Bool_t mcmsim(Int_t nEvents = ___NEVENTS___)
 {
   // AliLog::SetClassDebugLevel("AliTRDrawStream", 10);
 
-  AliCDBManager::Instance()->SetDefaultStorage("local:///lustre/alice/alien/alice/data/2011/OCDB");
-  AliCDBManager::Instance()->SetSpecificStorage("TRD/Calib/TrapConfig", "local:///lustre/alice/jkl/ocdb");
+  AliCDBManager::Instance()->SetDefaultStorage("local:///lustre/alice/alien/alice/data/2012/OCDB");
+  //  AliCDBManager::Instance()->SetSpecificStorage("TRD/Calib/TrapConfig", "local:///lustre/alice/jkl/ocdb");
   AliCDBManager::Instance()->SetRun(0);
 
   AliTRDtrapConfigHandler trapcfghandler(AliTRDcalibDB::Instance()->GetTrapConfig());
@@ -26,10 +25,16 @@ Bool_t mcmsim(Int_t nEvents = ___NEVENTS___)
 
 
   AliRunLoader *rl = AliRunLoader::Open("galice.root");
-  if (nEvents < 0)
+  if (nEvents < 0 || nEvents > rl->GetNumberOfEvents())
     nEvents = rl->GetNumberOfEvents();
 
+  if(nEvents==0) {
+     std::cerr << "ERROR: No events in galice.root found. Aborting ..." << std::endl;
+     return kFALSE;
+  }
+
   AliTRDdigitsManager *digMgr = new AliTRDdigitsManager();
+  AliTRDmcmSim::SetStoreClusters(kTRUE);
   AliTRDmcmSim *mcmsim = new AliTRDmcmSim();
 
   for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
