@@ -55,7 +55,7 @@ Bool_t mcmsim(Int_t nEvents = ___NEVENTS___)
       digits->Expand();
 
       for (Int_t iSide = 0; iSide <= 1; iSide++) {
-	for(Int_t iRob = side; iRob < digits->GetNrow() / 2; iRob += 2) {
+	for(Int_t iRob = iSide; iRob < digits->GetNrow() / 2; iRob += 2) {
 	  for(Int_t iMcm = 0; iMcm < 16; iMcm++) {
 	    mcmsim->Init(iDet, iRob, iMcm);
 	    mcmsim->SetData(digits, 0x0);
