@@ -22,7 +22,7 @@ function show_help() {
 
 #--------------------------------------------------------------------------------
 def_indatapath="/lustre/alice/alien/alice/data"
-def_outdatapath="/lustre/alice/pachmay_2/trd_trigger"
+def_outdatapath="/hera/alice/$(whoami)/reco/test"
 
 indatapath=$def_indatapath
 outdatapath=$def_outdatapath
@@ -32,12 +32,15 @@ runlocal=0
 
 alirootversion="dev"
 detectors="ITS TPC TRD TOF V0"
-rec_options="dc"
+#detectors="TRD"
+rec_options="dc,sa"
 nevents=10001
 startevent=0
 maxjobs=10
 ocdbother=0
 queue=alice-t3_2h
+
+[[ -f ${scriptpath}/batch.sh ]] && source ${scriptpath}/batch.sh || exit -1
 
 while getopts "hq:m:n:Ns:d:v:lo:b:" OPTION
 do 
@@ -94,10 +97,10 @@ echo "#-------------------------------------------------------------------"
 
 echo "Runnumber: $runnr"
 echo "Max no. of jobs to be submitted: $maxjobs"
-sleep 2;
 
 # count jobs already submitted
 njobs=0;
+jobtype=rec
 
 if [[ "$runnr" =~ ^[0-9]*$ ]]; then
   echo 0
@@ -117,6 +120,11 @@ for file in $filelist; do
 
     echo $file
 
+    # if max no of jobs not yet exceeded submit the job
+    if [ $njobs -ge $maxjobs ]; then
+	    break;
+    fi;
+
     if [[ $file =~ 'galice' ]]; then
 	sim=1;
 	chunk=`dirname $file`;
@@ -130,6 +138,13 @@ for file in $filelist; do
 	inputfile="\"$file\"";
     fi;
 
+    # skip chunk if we don't find it
+    [[ -e $file ]] || continue;
+    # skip chunk if it's already reconstructed
+    [[ -e $chunk/AliESDs.root ]] && continue;
+    # or if queued
+    [[ -e $chunk/.queued_${jobtype} ]] && continue;
+
     [[ -d $chunk ]] || mkdir -p $chunk
 
     if [ "$ocdbother" -eq 1 ]; then
@@ -141,6 +156,9 @@ for file in $filelist; do
       ocdb="local://${ocdbpath}/${year}/OCDB"
     fi
 
+    workdir=`readlink -f ${chunk} | sed -e 's#/SAT##'`
+
+    # prepare rec.C
     m4 -D ___OCDB___=$ocdb \
        -D ___INPUTFILE___=$inputfile \
        -D ___NEVENTS___=$nevents \
@@ -150,40 +168,27 @@ for file in $filelist; do
        -D ___EXTRA___="$extra" \
        ${scriptpath}/macros/rec.C.m4 > $chunk/rec.C
 
-    # skip chunk if we don't find it
-    [[ -e $file ]] || continue;
-    # skip chunk if it's already reconstructed
-    [[ -e $chunk/AliESDs.root ]] && continue;
-    # or if queued
-    [[ -e $chunk/.queued ]] && continue;
+    # prepare the run script
+    m4  -D ___SCRIPTPATH___=${scriptpath} \
+	-D ___ALIROOT_VERSION___=${alirootversion} \
+	-D ___WORKDIR___=${workdir} \
+	${scriptpath}/scripts/run${jobtype}.sh.m4 > $chunk/run${jobtype}.sh
+    chmod u+x $chunk/run${jobtype}.sh
 
-    # if max no of jobs not yet exceeded submit the job
-    if [ $njobs -ge $maxjobs ]; then
-	    break;
-    fi;
-
-    #  #BSUB -oo rec-%J-%I-out.log
-    #  #BSUB -eo rec-%J-%I-err.log
-
-    command=". ${scriptpath}/alijkl $alirootversion; cd $chunk; printenv > environment.log; aliroot -l -q -b ./rec.C; rm $(cat ${scriptpath}/remove.lst)"
+    # copy list of files to be removed after reconstruction
+    cp ${scriptpath}/remove.lst ${workdir}/
 
     if [ "x$queue" == "xrunlocal" ]; then
-      echo "Executing locally..." 
-      (
-        eval "$command" > "$chunk/reco.local.log" 2>&1
-      )
+	echo "Executing locally..." 
+	( ${chunk}/run${jobtype}.sh > "$chunk/${jobtype}.local.log" 2>&1 )
 
     elif [ "x$queue" == "xnorun" ]; then
-      echo "Not running reconstruction..."
+	echo "Not running reconstruction..."
 
     else
-      echo "#!/bin/sh
-        #BSUB -o $chunk/reco.batch.log
-        #BSUB -q $queue
-        #BSUB -J rec-$chunk
-        $command" | bsub
-  
-      touch $chunk/.queued
+  	submit ${jobtype} ${workdir} run${jobtype}.sh ${queue}
+
+	touch $chunk/.queued_${jobtype}
     fi
   
     njobs=$(($njobs + 1));

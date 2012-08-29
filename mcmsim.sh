@@ -25,10 +25,9 @@ queue=norun
 trklconfig=real-notc
 inputdir=.
 
-
 scriptpath=`dirname $(readlink -f $0)`
 
-echo $scriptpath
+[[ -f ${scriptpath}/batch.sh ]] && source ${scriptpath}/batch.sh || exit -1
 
 while getopts "c:hlq:m:Nn:o:s:v:" OPTION
 do 
@@ -83,6 +82,7 @@ run=`printf %09d $runnr`
 
 # count jobs already submitted
 njobs=0;
+jobtype=mcmsim
 
 for file in `find $inputdir -iname "TRD.Digits.root"`; do
 
@@ -98,10 +98,8 @@ for file in `find $inputdir -iname "TRD.Digits.root"`; do
     [[ -e $inpath/galice.root ]] || continue;
     [[ -e $inpath/TRD.Digits.root ]] || continue;
 
-
     # skip if the job in queued or output is available
-    [[ -e $outpath/.queued ]] && continue;
-
+    [[ -e $outpath/.queued_${jobtype} ]] && continue;
 
     echo "inpath  = $inpath"
     echo "outpath = $outpath"
@@ -117,51 +115,34 @@ for file in `find $inputdir -iname "TRD.Digits.root"`; do
     rm -f $outpath/TRD.Tracklets.root
     cp  $inpath/TRD.Tracklets.root $outpath
 
-    # copy TRAPconfig
-    cp -r ${scriptpath}/trapcfg $outpath/
-
+    # prepare mcmsim.C
     m4 \
 	-D ___TRACKLET_CONFIG___=$trklconfig\
 	-D ___NEVENTS___=$nevents\
 	$scriptpath/macros/mcmsim.C.m4 > $outpath/mcmsim.C
     cp *.datx $outpath/
 
-
-
-    echo $queue;
+    # prepare run script
+    m4 \
+	-D ___SCRIPTPATH___=${scriptpath} \
+	-D ___ALIROOT_VERSION___=${alirootversion} \
+	-D ___WORKDIR___=${outpath} \
+	${scriptpath}/scripts/run${jobtype}.sh.m4 > ${outpath}/run${jobtype}.sh
+    chmod u+x $outpath/run${jobtype}.sh
 
     if [ "x$queue" == "xnorun" ] ; then
-
 	echo "not executing MCM simulator"
 
     elif [ "x$queue" == "xrunlocal" ] ; then
-
-
-	. $scriptpath/alijkl $alirootversion
-	pushd $outpath
-	#printenv
-
-	ls -l $inpath
-
-	aliroot -b -q -l mcmsim.C
-	popd
+	echo "Executing locally..." 
+	( ${outpath}/run${jobtype}.sh > "${outpath}/${jobtype}.local.log" 2>&1 )
 
     else 
+	submit ${jobtype} ${outdatapath}/${chunk} run${jobtype}.sh ${queue}
 
-	echo "#!/bin/sh
-          #BSUB -o $outpath/mcmsim.batch.log
-          #BSUB -q $queue
-          . ${scriptpath}/alijkl $alirootversion
-          cd $outpath
-          printenv > mcmsim.environment.log
-          aliroot -l -q -b mcmsim.C" | bsub
-  
-	touch $outpath/.queued
-
+	touch $outpath/.queued_${jobtype}
     fi
   
     echo "#-------------------------------------------------------------------"
     njobs=$(($njobs + 1));
 done
-
-

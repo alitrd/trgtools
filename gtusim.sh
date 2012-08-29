@@ -24,7 +24,7 @@ queue="norun"
 inputdir=.
 
 scriptpath=`dirname $(readlink -f $0)`
-echo $scriptpath
+[[ -f ${scriptpath}/batch.sh ]] && source ${scriptpath}/batch.sh || exit -1
 
 while getopts "hlq:m:Nn:o:s:v:" OPTION
 do 
@@ -74,8 +74,11 @@ run=`printf %09d $runnr`
 
 # count jobs already submitted
 njobs=0;
+jobtype=gtusim
 
+echo "searching for files now"
 for file in `find $inputdir -iname "TRD.Tracklets.root"`; do
+  echo $file
 
   inpath=$(dirname $file)
   outpath=$(perl -e "\$fi=\"$inpath\"; \$fi =~ s%$inputdir%$outputdir/%; print \"\$fi\";")
@@ -89,7 +92,7 @@ for file in `find $inputdir -iname "TRD.Tracklets.root"`; do
   [[ -e $inpath/galice.root ]] || continue;
 
   # skip if the job in queued or output is available
-  [[ -e $outpath/.queued ]] && continue;
+  [[ -e $outpath/.queued_${jobtype} ]] && continue;
 
   # echo "inpath  = $inpath"
   # echo "outpath = $outpath"
@@ -106,36 +109,32 @@ for file in `find $inputdir -iname "TRD.Tracklets.root"`; do
     fi;
   done
 
+  # prepare gtusim.C
   m4 \
       -D ___NEVENTS___=$nevents\
       $scriptpath/macros/gtusim.C.m4 > $outpath/gtusim.C
-  command="aliroot -b -q -l gtusim.C"
-  if [ "x$queue" == "xrunlocal" ]; then
-    command="$command > gtusim.local.log 2>&1"
-  fi
+
+  # prepare run script
+  m4 \
+      -D ___SCRIPTPATH___=${scriptpath} \
+      -D ___ALIROOT_VERSION___=${alirootversion} \
+      -D ___WORKDIR___=${outpath} \
+      ${scriptpath}/scripts/run${jobtype}.sh.m4 > ${outpath}/run${jobtype}.sh
+  chmod u+x ${outpath}/run${jobtype}.sh
 
   if [ "x$queue" == "xnorun" ] ; then
-    echo "not executing GTU simulation"
+      echo "not executing GTU simulation"
 
   elif [ "x$queue" == "xrunlocal" ] ; then
-    . $scriptpath/alijkl $alirootversion
-    pushd $outpath
-    eval $command
-    popd
+      echo "Executing locally..." 
+      ( ${outpath}/run${jobtype}.sh > "${outpath}/${jobtype}.local.log" 2>&1 )
 
   else 
-    echo "#!/bin/sh
-            #BSUB -o $outpath/gtusim.batch.log
-            #BSUB -q $queue
-            . $(dirname $0)/alijkl $alirootversion
-            cd $outpath
-            printenv > gtusim.environment.log
-            $command" | bsub
-    touch $outpath/.queued
+      submit ${jobtype} ${outdatapath}/${chunk} run${jobtype}.sh ${queue}
+
+      touch $outpath/.queued_${jobtype}
   fi
 
   echo "#-------------------------------------------------------------------"
   njobs=$(($njobs + 1));
 done
-
-

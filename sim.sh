@@ -32,7 +32,9 @@ bfield=$def_bfield
 nevents=100
 maxjobs=10
 ocdbother=0
-queue=alice-t3_2h
+queue=runlocal
+
+[[ -f ${scriptpath}/batch.sh ]] && source ${scriptpath}/batch.sh || exit -1
 
 while getopts "hq:m:n:Ns:d:v:lo:b:t:f:" OPTION
 do 
@@ -94,21 +96,20 @@ echo "#-------------------------------------------------------------------"
 #--------------------------------------------------------------------------------
 
 echo "Max no. of jobs to be submitted: $maxjobs"
-sleep 2;
 
 # count jobs already submitted
 ijob=-1;
 njobs=0;
+jobtype=sim
 
 [[ -d $outdatapath ]] || mkdir -p $outdatapath
-pushd $outdatapath
-
+pushd $outdatapath || exit -1
 
 while [ true ]; do
 
     # if max no of jobs not yet exceeded submit the job
     if [ $njobs -ge $maxjobs ]; then
-	    break;
+	break;
     fi;
 
     ijob=$((1+$ijob))
@@ -118,7 +119,7 @@ while [ true ]; do
     # skip chunk if it's already simulated
     [[ -e $chunk/galice.root ]] && continue;
     # or if queued
-    [[ -e $chunk/.queued_sim ]] && continue;
+    [[ -e $chunk/.queued_${jobtype} ]] && continue;
 
     mkdir -p $chunk
 
@@ -128,34 +129,34 @@ while [ true ]; do
       ocdb="local://${ocdbpath}/${year}/OCDB"
     fi
 
+    # prepare sim.C
     m4 -D ___OCDB___=$ocdb \
        -D ___NEVENTS___=$nevents \
        ${scriptpath}/macros/sim.C.m4 > $chunk/sim.C
 
+    # prepare Config.C
     m4 -D ___SIMTYPE___=$simtype \
        -D ___SCALEB___=$scalebfield \
        ${scriptpath}/macros/Config.C.m4 > $chunk/Config.C
 
-    command=". ${scriptpath}/alijkl $alirootversion; cd $chunk; printenv > environment.log; aliroot -l -q -b ./sim.C;"
+    # prepare the run script
+    m4  -D ___SCRIPTPATH___=${scriptpath} \
+	-D ___ALIROOT_VERSION___=${alirootversion} \
+	-D ___WORKDIR___=${outdatapath}/${chunk} \
+	${scriptpath}/scripts/run${jobtype}.sh.m4 > $chunk/run${jobtype}.sh
+    chmod u+x $chunk/run${jobtype}.sh
 
     if [ "x$queue" == "xrunlocal" ]; then
-      echo "Executing locally..." 
-      (
-        eval "$command" > "$chunk/sim.local.log" 2>&1
-      )
+	echo "Executing locally..." 
+	( ${chunk}/run${jobtype}.sh > "$chunk/${jobtype}.local.log" 2>&1 )
 
     elif [ "x$queue" == "xnorun" ]; then
-      echo "Not running simulation..."
+	echo "Not running simulation..."
 
     else
-      echo "#!/bin/sh
-        #BSUB -o $chunk/sim.batch.log
-        #BSUB -e $chunk/sim.batch.err
-        #BSUB -q $queue
-        #BSUB -J sim-$chunk
-        $command" | bsub
-  
-      touch $chunk/.queued_sim
+	submit ${jobtype} ${outdatapath}/${chunk} run${jobtype}.sh ${queue}
+
+	touch $chunk/.queued_${jobtype}
     fi
   
     njobs=$(($njobs + 1));
