@@ -15,6 +15,11 @@ function show_help() {
 }
 
 #--------------------------------------------------------------------------------
+scriptpath=`dirname $(readlink -f $0)`
+
+[[ -f ${scriptpath}/batch.sh ]] && source ${scriptpath}/batch.sh || exit -1
+
+farm=`farm`
 
 alirootversion="dev"
 nevents=10001
@@ -22,9 +27,6 @@ startevent=0
 maxjobs=10
 queue="norun"
 inputdir=.
-
-scriptpath=`dirname $(readlink -f $0)`
-[[ -f ${scriptpath}/batch.sh ]] && source ${scriptpath}/batch.sh || exit -1
 
 while getopts "hlq:m:Nn:o:s:v:" OPTION
 do 
@@ -121,6 +123,9 @@ for file in `find $inputdir -iname "TRD.Tracklets.root"`; do
       -D ___WORKDIR___=${outpath} \
       ${scriptpath}/scripts/run${jobtype}.sh.m4 > ${outpath}/run${jobtype}.sh
   chmod u+x ${outpath}/run${jobtype}.sh
+
+  # copy the script to setup the environment
+  cp ${scriptpath}/alisetup.${farm} ${workdir}/alisetup
 
   if [ "x$queue" == "xnorun" ] ; then
       echo "not executing GTU simulation"

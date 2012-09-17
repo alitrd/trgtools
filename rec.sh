@@ -174,7 +174,7 @@ for file in $filelist; do
        -D ___RECDETECTORS___="$detectors" \
        -D ___TRD_RECOPTIONS___="$rec_options" \
        -D ___EXTRA___="$extra" \
-       ${scriptpath}/macros/recCPass0.C.m4 > $chunk/rec.C
+       ${scriptpath}/macros/rec.C.m4 > $chunk/rec.C
 
     # prepare the run script
     m4  -D ___SCRIPTPATH___=${scriptpath} \

@@ -17,13 +17,24 @@ function show_help() {
 }
 
 #--------------------------------------------------------------------------------
-def_outdatapath="/tmp/test"
+scriptpath=`dirname $(readlink -f $0)`
+
+[[ -f ${scriptpath}/batch.sh ]] && source ${scriptpath}/batch.sh || exit -1
+
+farm=`farm`
+if [[ $farm =~ pro|ica ]]; then
+    def_ocdbpath="/cvmfs/alice.gsi.de/alice/data"
+    def_outdatapath="/hera/alice/$(whoami)/sim/test"
+elif [ $farm = lenny64 ]; then
+    def_ocdbpath="/lustre/alice/alien/alice/data"
+    def_outdatapath="/lustre/alice/$(whoami)/sim/test"
+fi
+
 def_simtype="kPythia6"
 def_bfield="b5n";
 
 outdatapath=$def_outdatapath
-scriptpath=`dirname $(readlink -f $0)`
-ocdbpath=$indatapath
+ocdbpath=$def_ocdbpath
 runlocal=0
 
 alirootversion="dev"
@@ -33,8 +44,6 @@ nevents=100
 maxjobs=10
 ocdbother=0
 queue=runlocal
-
-[[ -f ${scriptpath}/batch.sh ]] && source ${scriptpath}/batch.sh || exit -1
 
 while getopts "hq:m:n:Ns:d:v:lo:b:t:f:" OPTION
 do 
@@ -145,6 +154,9 @@ while [ true ]; do
 	-D ___WORKDIR___=${outdatapath}/${chunk} \
 	${scriptpath}/scripts/run${jobtype}.sh.m4 > $chunk/run${jobtype}.sh
     chmod u+x $chunk/run${jobtype}.sh
+
+    # copy the script to setup the environment
+    cp ${scriptpath}/alisetup.${farm} ${workdir}/alisetup
 
     if [ "x$queue" == "xrunlocal" ]; then
 	echo "Executing locally..." 
