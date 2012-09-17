@@ -1,10 +1,19 @@
 #!/bin/bash
 
+function farm() {
+    ip=$(host `hostname` | sed -e 's/.* has address \([0-9]*.[0-9]*.[0-9]*.[0-9]*\)/\1/')
+    host ica.hpc   | grep $ip > /dev/null 2>&1 && echo "ica"
+    host pro.hpc   | grep $ip > /dev/null 2>&1 && echo "pro"
+    host lxlenny64 | grep $ip > /dev/null 2>&1 && echo "lenny64"
+}
+
 function submit_sge() {
     cat > $2/$1.job <<EOF
 #$ -o $2/$1.batch.log
 #$ -e $2/$1.batch.err
+#$ -l h_rss=4G
 #$ -wd $2
+./$3
 EOF
     qsub < $2/$1.job
 }
@@ -41,6 +50,10 @@ function submit() {
     # 4: batch queue
 
     batch_system=lsf
+
+    farm=`farm`
+    echo $farm
+    [[ $farm =~ pro|ica ]] && batch_system=sge
     echo $@
     submit_${batch_system} $1 $2 $3 $4
 }

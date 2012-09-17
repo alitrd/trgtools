@@ -21,13 +21,23 @@ function show_help() {
 }
 
 #--------------------------------------------------------------------------------
-def_indatapath="/lustre/alice/alien/alice/data"
-def_outdatapath="/hera/alice/$(whoami)/reco/test"
+scriptpath=`dirname $(readlink -f $0)`
+
+[[ -f ${scriptpath}/batch.sh ]] && source ${scriptpath}/batch.sh || exit -1
+
+farm=`farm`
+if [[ $farm =~ pro|ica ]]; then
+    def_indatapath="/hera/alice/alien/alice/data"
+    def_outdatapath="/hera/alice/$(whoami)/reco/test"
+    ocdbpath="/cvmfs/alice.gsi.de/alice/data"
+elif [ $farm = lenny64 ]; then
+    def_indatapath="/lustre/alice/alien/alice/data"
+    def_outdatapath="/lustre/alice/$(whoami)/reco/test"
+    ocdbpath=$def_indatapath
+fi
 
 indatapath=$def_indatapath
 outdatapath=$def_outdatapath
-scriptpath=`dirname $(readlink -f $0)`
-ocdbpath=$indatapath
 runlocal=0
 
 alirootversion="dev"
@@ -39,8 +49,6 @@ startevent=0
 maxjobs=10
 ocdbother=0
 queue=alice-t3_2h
-
-[[ -f ${scriptpath}/batch.sh ]] && source ${scriptpath}/batch.sh || exit -1
 
 while getopts "hq:m:n:Ns:d:v:lo:b:" OPTION
 do 
@@ -166,7 +174,7 @@ for file in $filelist; do
        -D ___RECDETECTORS___="$detectors" \
        -D ___TRD_RECOPTIONS___="$rec_options" \
        -D ___EXTRA___="$extra" \
-       ${scriptpath}/macros/rec.C.m4 > $chunk/rec.C
+       ${scriptpath}/macros/recCPass0.C.m4 > $chunk/rec.C
 
     # prepare the run script
     m4  -D ___SCRIPTPATH___=${scriptpath} \
@@ -177,6 +185,9 @@ for file in $filelist; do
 
     # copy list of files to be removed after reconstruction
     cp ${scriptpath}/remove.lst ${workdir}/
+
+    # copy the script to setup the environment
+    cp ${scriptpath}/alisetup.${farm} ${workdir}/alisetup
 
     if [ "x$queue" == "xrunlocal" ]; then
 	echo "Executing locally..." 
