@@ -4,8 +4,9 @@ Bool_t gtusim(Int_t nEvents = ___NEVENTS___)
   // AliLog::SetClassDebugLevel("AliTRDgtuTMU", 10);
 
   AliTRDfeeParam::SetTracklet(kTRUE);
-  AliTRDgtuParam::SetDeltaY(36);
-  AliTRDgtuParam::SetDeltaAlpha(21);
+  AliTRDgtuParam::SetDeltaY(18); // 9
+  AliTRDgtuParam::SetDeltaAlpha(21); // 11
+  AliTRDgtuParam::Instance()->SetVertexSize(10.);
 
   AliRunLoader *rl = AliRunLoader::Open("galice.root");
 

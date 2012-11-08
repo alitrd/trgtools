@@ -125,7 +125,7 @@ for file in `find $inputdir -iname "TRD.Tracklets.root"`; do
   chmod u+x ${outpath}/run${jobtype}.sh
 
   # copy the script to setup the environment
-  cp ${scriptpath}/alisetup.${farm} ${workdir}/alisetup
+  cp ${scriptpath}/alisetup.${farm} ${outpath}/alisetup
 
   if [ "x$queue" == "xnorun" ] ; then
       echo "not executing GTU simulation"
@@ -135,7 +135,7 @@ for file in `find $inputdir -iname "TRD.Tracklets.root"`; do
       ( ${outpath}/run${jobtype}.sh > "${outpath}/${jobtype}.local.log" 2>&1 )
 
   else 
-      submit ${jobtype} ${outdatapath}/${chunk} run${jobtype}.sh ${queue}
+      submit ${jobtype} ${outpath}/${chunk} run${jobtype}.sh ${queue}
 
       touch $outpath/.queued_${jobtype}
   fi
