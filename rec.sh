@@ -41,7 +41,7 @@ outdatapath=$def_outdatapath
 runlocal=0
 
 alirootversion="dev"
-detectors="ITS TPC TRD TOF V0"
+detectors="ITS TPC TRD TOF V0 HLT"
 #detectors="TRD"
 rec_options="dc,sa"
 nevents=10001
@@ -204,5 +204,8 @@ for file in $filelist; do
   
     njobs=$(($njobs + 1));
 done
+
+tstamp=$(date)
+echo "$njobs jobs started $tstamp" >> ${workdir}/../jobs.txt
 
 popd

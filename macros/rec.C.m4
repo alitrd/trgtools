@@ -12,19 +12,22 @@ void rec()
   rec.SetRunReconstruction("___RECDETECTORS___");
 
   // QA options
+  rec.SetRunGlobalQA(kFALSE);
   rec.SetRunQA(":") ;
   rec.SetQARefDefaultStorage("local://$ALICE_ROOT/QAref") ;
 
   // AliReconstruction settings
   rec.SetWriteESDfriend(kTRUE);
-  rec.SetFractionFriends(1.); 
+  rec.SetFractionFriends(1.);
   rec.SetWriteAlignmentData();
   rec.SetInput(___INPUTFILE___);
-  rec.SetOption("TRD", "___TRD_RECOPTIONS___"); 
+  rec.SetOption("TRD", "___TRD_RECOPTIONS___");
   rec.SetUseTrackingErrorsForAlignment("ITS");
   rec.SetCleanESD(kFALSE);
   rec.SetStopOnError(kFALSE);
 
   AliLog::Flush();
   rec.Run();
+
+  printf("rec.C completed\n");
 }
