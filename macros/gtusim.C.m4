@@ -96,7 +96,7 @@ Bool_t gtusim(Int_t nEvents = ___NEVENTS___)
   esdFriendTreeNew->Write();
   esdFriendFileNew->Close();
 
-  gtusim->WriteTreesToFile();
+  // gtusim->WriteTreesToFile();
 
   return kTRUE;
 }
