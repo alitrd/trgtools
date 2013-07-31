@@ -2,27 +2,28 @@ Bool_t mcmsim(Int_t nEvents = ___NEVENTS___)
 {
   // AliLog::SetClassDebugLevel("AliTRDrawStream", 10);
 
-  AliCDBManager::Instance()->SetDefaultStorage("local:///lustre/alice/alien/alice/data/2012/OCDB");
-  //  AliCDBManager::Instance()->SetSpecificStorage("TRD/Calib/TrapConfig", "local:///lustre/alice/jkl/ocdb");
+  AliCDBManager::Instance()->SetDefaultStorage("local:///hera/alice/alien/alice/data/2013/OCDB");
+  AliCDBManager::Instance()->SetSpecificStorage("TRD/Calib/TrapConfig", "local:///hera/alice/jklein/ocdb");
   AliCDBManager::Instance()->SetRun(0);
+
+  // AliTRDcalibDB::Instance()->SetTrapConfig("cf_pg-fpnp32_zs-s16-deh_tb22_trkl-b5n-fs1e24-ht200-qs0e23s23e22-pidlhc11dv1-pt100_ptrg", "r5037");
+  AliTRDcalibDB::Instance()->SetTrapConfig("cf_p_zs-s16-deh_tb24_trkl-b5p-fs1e24-ht200-qs0e24s24e23-pidlinear-pt100_ptrg", "r4866");
+
+  for (Int_t iDet = 0; iDet < 540; ++iDet) {
+    AliTRDcalibDB::Instance()->GetTrapConfig()->SetTrapReg(AliTRDtrapConfig::kFPBY, 0, iDet);
+    AliTRDcalibDB::Instance()->GetTrapConfig()->SetTrapReg(AliTRDtrapConfig::kFGBY, 0, iDet);
+    AliTRDcalibDB::Instance()->GetTrapConfig()->SetTrapReg(AliTRDtrapConfig::kFTBY, 0, iDet);
+  }
 
   AliTRDtrapConfigHandler trapcfghandler(AliTRDcalibDB::Instance()->GetTrapConfig());
   // trapcfghandler.ResetMCMs();
   // trapcfghandler.LoadConfig("trapcfg/initialize.r3610");
   // trapcfghandler.LoadConfig("trapcfg/cf_p_zs-s16-deh_tb27_trkl-b5n-fs1e25-ht200-qs0e25s25e24-pidlhc10dv2-pt100_ptrg.r4676");
 
-  ifelse(___TRACKLET_CONFIG___, `mc-tc', `
-')
-
-  ifelse(___TRACKLET_CONFIG___, `mc-notc', `
-')
-
-  ifelse(___TRACKLET_CONFIG___, `real-tc', `
-')
-
-  ifelse(___TRACKLET_CONFIG___, `real-notc', `
-')
-
+  ifelse(___TRACKLET_CONFIG___, `mc-tc', `')
+  ifelse(___TRACKLET_CONFIG___, `mc-notc', `')
+  ifelse(___TRACKLET_CONFIG___, `real-tc', `')
+  ifelse(___TRACKLET_CONFIG___, `real-notc', `')
 
   AliRunLoader *rl = AliRunLoader::Open("galice.root");
   if (nEvents < 0 || nEvents > rl->GetNumberOfEvents())
@@ -146,9 +147,10 @@ Bool_t mcmsim(Int_t nEvents = ___NEVENTS___)
     AliTRDrawStream::SortTracklets(trklArray, sortedTracklets, indices);
 
     TIter trackletIter(&sortedTracklets);
-    AliESDTrdTracklet *tracklet = 0x0;
-    while (tracklet = (AliESDTrdTracklet*) trackletIter()) {
-      esd->AddTrdTracklet(tracklet);
+    AliTRDtrackletMCM *tracklet = 0x0;
+    while (tracklet = (AliTRDtrackletMCM*) trackletIter()) {
+      Int_t label = -1;
+      esd->AddTrdTracklet(new AliESDTrdTracklet(tracklet->GetTrackletWord(), tracklet->GetHCId(), label));
     }
 
     esdTreeNew->Fill();
@@ -164,6 +166,4 @@ Bool_t mcmsim(Int_t nEvents = ___NEVENTS___)
   esdFriendFileNew->cd();
   esdFriendTreeNew->Write();
   esdFriendFileNew->Close();
-
-
 }
