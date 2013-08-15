@@ -46,11 +46,11 @@ ocdbother=0
 queue=runlocal
 
 while getopts "hq:m:n:Ns:d:v:lo:b:t:f:" OPTION
-do 
+do
   case $OPTION in
     h)  show_help
         exit 0
-        ;; 
+        ;;
     q)  queue=$OPTARG
         ;;
     l)  queue="runlocal"
@@ -156,10 +156,10 @@ while [ true ]; do
     chmod u+x $chunk/run${jobtype}.sh
 
     # copy the script to setup the environment
-    cp ${scriptpath}/alisetup.${farm} ${workdir}/alisetup
+    cp ${scriptpath}/alisetup.${farm} ${outdatapath}/${chunk}/alisetup
 
     if [ "x$queue" == "xrunlocal" ]; then
-	echo "Executing locally..." 
+	echo "Executing locally..."
 	( ${chunk}/run${jobtype}.sh > "$chunk/${jobtype}.local.log" 2>&1 )
 
     elif [ "x$queue" == "xnorun" ]; then
@@ -170,7 +170,7 @@ while [ true ]; do
 
 	touch $chunk/.queued_${jobtype}
     fi
-  
+
     njobs=$(($njobs + 1));
 done
 
