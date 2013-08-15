@@ -24,8 +24,6 @@ TPC.Digits.root
 TPC.Hits.root
 TPC.RecPoints.root
 TPCsignal.root
-TRD.Digits.root
-TRD.SDigits.root
 VZERO.Digits.root
 VZERO.Hits.root
 VZERO.SDigits.root
