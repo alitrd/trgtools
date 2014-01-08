@@ -3,7 +3,6 @@ void rec()
 {
   AliCDBManager * man = AliCDBManager::Instance();
   man->SetDefaultStorage("___OCDB___");
-  man->SetSpecificStorage("TRD/Calib/Krypton_2011-01", "local://$ALICE_ROOT/OCDB");
   ___EXTRA___
 
   AliReconstruction rec;
