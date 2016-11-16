@@ -16,7 +16,7 @@ function show_help() {
   echo "    -m <i>    Limit maximum number of jobs (=chunks) to submit to <i>"
   echo "    -n <i>    Process <i> events per chunk, starting from <s>"
   echo "    -s <i>    Specify start event <s>"
-  echo "    -v <c>    Specify aliroot version to use (default: dev)"
+  echo "    -v <c>    Specify aliroot version to use (default: $def_alirootversion)"
   echo "    -h        Show this help"
 }
 
@@ -34,13 +34,20 @@ elif [ $farm = lenny64 ]; then
     def_indatapath="/lustre/alice/alien/alice/data"
     def_outdatapath="/lustre/alice/$(whoami)/reco/test"
     ocdbpath=$def_indatapath
+elif [[ $farm =~ kronos ]]; then
+    def_indatapath="/lustre/nyx/alice/alien/alice/data/"
+    def_outdatapath="/lustre/nyx/alice/users/$(whoami)/reco/test"
+    def_ocdbpath="/lustre/nyx/alice/users/hklingen/alicesw/ali-master/AliRoot/OCDB"
 fi
+
+def_alirootversion="latest-ali-master"
 
 indatapath=$def_indatapath
 outdatapath=$def_outdatapath
+ocdbpath=$def_ocdbpath
 runlocal=0
+alirootversion=$def_alirootversion
 
-alirootversion="dev"
 detectors="ITS TPC TRD TOF V0 HLT"
 #detectors="TRD"
 rec_options="dc,sa"
@@ -99,7 +106,8 @@ echo "#  MaxJobs:        $maxjobs"
 echo "#  DatapathIn:     $indatapath"
 echo "#  DatapathOut:    $outdatapath"
 echo "#  AliRootVersion: $alirootversion"
-echo "#    nevents: $nevents     startevent: $startevent"
+echo "#  Nevents:        $nevents"
+echo "#  Startevent:     $startevent"
 echo "#-------------------------------------------------------------------"
 #--------------------------------------------------------------------------------
 
@@ -158,10 +166,10 @@ for file in $filelist; do
     if [ "$ocdbother" -eq 1 ]; then
       ocdb=${ocdbpath}
     elif [ $sim -eq 1 ]; then
-      ocdb='local://$ALICE_ROOT/OCDB';
+      ocdb="local://${ocdbpath}"
       extra="man->SetSpecificStorage(\"GRP/GRP/Data\", Form(\"local://%s\",gSystem->pwd()));"
     else
-      ocdb="local://${ocdbpath}/${year}/OCDB"
+      ocdb="local://${ocdbpath}"
     fi
 
     workdir=`readlink -f ${chunk} | sed -e 's#/SAT##'`

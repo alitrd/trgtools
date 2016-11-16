@@ -1,0 +1,3 @@
+#eval $(alienv printenv VO_ALICE@AliPhysics)
+#eval $(alienv printenv VO_ALICE@AliPhysics::v5-08-13h-01-1)
+eval $(/lustre/nyx/alice/alibuild/alienv --no-refresh -w /lustre/nyx/alice/users/hklingen/alicesw/sw/ printenv -q VO_ALICE@AliPhysics::latest-ali-master)

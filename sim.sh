@@ -7,12 +7,13 @@ function show_help() {
   echo "    -q <q>    Specify batch queue to submit to"
   echo "    -l        Run on local machine (useful for testing)"
   echo "    -o <o>    Specify output directory (default: $def_outdatapath)"
-  echo "    -b <p>    Specify OCDB base path (default: $def_indatapath)"
+  echo "    -b <p>    Specify OCDB base path (default: $def_ocdbpath)"
   echo "                [Normally automatically derived]"
   echo "    -m <i>    Limit maximum number of jobs (=chunks) to submit to <i>"
   echo "    -n <i>    Process <i> events per chunk, starting from <s>"
   echo "    -t <type> process to simulate, e.g. kPythia6Jets104_125 (default: $def_simtype)"
-  echo "    -v <c>    Specify aliroot version to use (default: dev)"
+  echo "    -f <type> Specify magnetic field to use (default: $def_bfield)"
+  echo "    -v <c>    Specify aliroot version to use (default: $def_alirootversion)"
   echo "    -h        Show this help"
 }
 
@@ -22,26 +23,31 @@ scriptpath=`dirname $(readlink -f $0)`
 [[ -f ${scriptpath}/batch.sh ]] && source ${scriptpath}/batch.sh || exit -1
 
 farm=`farm`
+
 if [[ $farm =~ pro|ica ]]; then
     def_ocdbpath="/cvmfs/alice.gsi.de/alice/data"
     def_outdatapath="/hera/alice/$(whoami)/sim/test"
 elif [ $farm = lenny64 ]; then
     def_ocdbpath="/lustre/alice/alien/alice/data"
     def_outdatapath="/lustre/alice/$(whoami)/sim/test"
+elif [[ $farm =~ kronos ]]; then
+    def_ocdbpath="/lustre/nyx/alice/users/hklingen/alicesw/ali-master/AliRoot/OCDB"
+    def_outdatapath="/lustre/nyx/alice/users/$(whoami)/sim/test"
 fi
 
 def_simtype="kPythia6"
-def_bfield="b5n";
+#def_indatapath=""
+def_alirootversion="latest-ali-master"
+def_bfield="b5p";
 
 outdatapath=$def_outdatapath
 ocdbpath=$def_ocdbpath
 runlocal=0
-
-alirootversion="dev"
+alirootversion=$def_alirootversion
 simtype=$def_simtype
 bfield=$def_bfield
-nevents=100
-maxjobs=10
+nevents=1
+maxjobs=1
 ocdbother=0
 queue=runlocal
 
@@ -100,7 +106,7 @@ echo "#  MaxJobs:        $maxjobs"
 echo "#  DatapathIn:     $indatapath"
 echo "#  DatapathOut:    $outdatapath"
 echo "#  AliRootVersion: $alirootversion"
-echo "#    nevents: $nevents"
+echo "#  nevents:        $nevents"
 echo "#-------------------------------------------------------------------"
 #--------------------------------------------------------------------------------
 
@@ -135,7 +141,8 @@ while [ true ]; do
     if [ "$ocdbother" -eq 1 ]; then
       ocdb=${ocdbpath}
     else
-      ocdb="local://${ocdbpath}/${year}/OCDB"
+      ocdb="local://${ocdbpath}"
+      #ocdb="local://${ocdbpath}/${year}/OCDB"
     fi
 
     # prepare sim.C

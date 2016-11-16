@@ -5,6 +5,7 @@ function farm() {
     host ica.hpc   | grep $ip > /dev/null 2>&1 && echo "ica"
     host pro.hpc   | grep $ip > /dev/null 2>&1 && echo "pro"
     host lxlenny64 | grep $ip > /dev/null 2>&1 && echo "lenny64"
+    host kronos.hpc.gsi.de | grep $ip > /dev/null 2>&1 && echo "kronos"
 }
 
 function submit_sge() {
@@ -16,6 +17,17 @@ function submit_sge() {
 ./$3
 EOF
     qsub < $2/$1.job
+}
+
+function submit_slurm() {
+echo "#!/bin/sh
+# #SBATCH --partition=long
+#SBATCH --time=08:00:00
+#SBATCH -o $2/$1.batch.log
+#SBATCH -e $2/$1.batch.err
+#SBATCH -D $2
+./$3" | tee $2/$1.job
+    sbatch $2/$1.job
 }
 
 function submit_lsf() {
@@ -54,6 +66,7 @@ function submit() {
     farm=`farm`
     echo $farm
     [[ $farm =~ pro|ica ]] && batch_system=sge
+    [[ $farm =~ kronos ]] && batch_system=slurm
     echo $@
     submit_${batch_system} $1 $2 $3 $4
 }
